@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyRoute.uk - dnata / Emirates C209 System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --color-primary: #d71920;
+            --color-accent: #c4a56d;
+            --color-bg: #f9f9f9;
+            --color-border: #e1e1e1;
+            --color-text: #333;
+            --color-code-bg: #f5f5f5;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            border-bottom: 3px solid var(--color-primary);
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: var(--color-primary);
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .header .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .file-tree {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .file-tree h2 {
+            color: var(--color-primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--color-border);
+        }
+        
+        .file-item {
+            padding: 8px 12px;
+            margin: 2px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .file-item:hover {
+            background-color: var(--color-code-bg);
+        }
+        
+        .file-item.active {
+            background-color: var(--color-primary);
+            color: white;
+        }
+        
+        .file-icon {
+            margin-right: 8px;
+            font-weight: bold;
+        }
+        
+        .file-content {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .file-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--color-border);
+        }
+        
+        .file-title {
+            color: var(--color-primary);
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        
+        .file-type {
+            background: var(--color-accent);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background: var(--color-code-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 20px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .code-line {
+            padding: 2px 0;
+        }
+        
+        .code-comment {
+            color: #6a737d;
+        }
+        
+        .code-keyword {
+            color: #d73a49;
+        }
+        
+        .code-string {
+            color: #032f62;
+        }
+        
+        .code-function {
+            color: #6f42c1;
+        }
+        
+        .code-variable {
+            color: #e36209;
+        }
+        
+        .readme-content {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .readme-content h1 {
+            color: var(--color-primary);
+            margin-bottom: 20px;
+        }
+        
+        .readme-content h2 {
+            color: var(--color-primary);
+            margin: 25px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .readme-content ul {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        
+        .readme-content li {
+            margin: 8px 0;
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .tech-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--color-primary);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .file-content {
+                padding: 15px;
+            }
+            
+            .code-block {
+                padding: 15px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>SkyRoute.uk</h1>
+            <div class="subtitle">dnata / Emirates C209 System</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- File Tree Navigation -->
+        <div class="file-tree">
+            <h2>Project Structure</h2>
+            <div class="file-item active" onclick="showFile('readme')">
+                <span class="file-icon">📖</span> README.md
+            </div>
+            <div class="file-item" onclick="showFile('settings')">
+                <span class="file-icon">⚙️</span> settings.tsx
+            </div>
+            <div class="file-item" onclick="showFile('auth')">
+                <span class="file-icon">🔐</span> auth.ts
+            </div>
+            <div class="file-item" onclick="showFile('firebase')">
+                <span class="file-icon">🔥</span> firebase.ts
+            </div>
+            <div class="file-item" onclick="showFile('env')">
+                <span class="file-icon">🔧</span> .env.local.example
+            </div>
+            <div class="file-item" onclick="showFile('globals-css')">
+                <span class="file-icon">🎨</span> globals.css
+            </div>
+            <div class="file-item" onclick="showFile('theme-css')">
+                <span class="file-icon">🎨</span> theme.css
+            </div>
+        </div>
+
+        <!-- Tech Stack -->
+        <div class="tech-stack">
+            <div class="tech-item">
+                <strong>Next.js</strong><br>React Framework
+            </div>
+            <div class="tech-item">
+                <strong>Firebase</strong><br>Backend & Auth
+            </div>
+            <div class="tech-item">
+                <strong>TypeScript</strong><br>Type Safety
+            </div>
+            <div class="tech-item">
+                <strong>Tailwind CSS</strong><br>Styling
+            </div>
+        </div>
+
+        <!-- File Content Area -->
+        <div id="file-content">
+            <!-- README.md will be shown by default -->
+            <div class="readme-content">
+                <h1>SkyRoute.uk – dnata / Emirates C209 System</h1>
+                <p>Secure Emirates-style system for managing Ramp & Logistics logs (C209/C208).</p>
+                
+                <h2>Setup</h2>
+                <ul>
+                    <li>Copy .env.local.example → .env.local and fill in credentials.</li>
+                    <li>Run:
+                        <div class="code-block">
+                            <div class="code-line">npm install</div>
+                            <div class="code-line">npm run dev</div>
+                        </div>
+                    </li>
+                    <li>Deploy via Vercel → <a href="https://skyroute.uk" target="_blank">https://skyroute.uk</a></li>
+                </ul>
+                
+                <h2>Features</h2>
+                <ul>
+                    <li>Google Authentication with domain restrictions</li>
+                    <li>Firebase Firestore for data storage</li>
+                    <li>Admin settings panel for configuration</li>
+                    <li>Emirates/dnata brand styling</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // File contents
+        const files = {
+            'readme': {
+                type: 'markdown',
+                content: `<div class="readme-content">
+                    <h1>SkyRoute.uk – dnata / Emirates C209 System</h1>
+                    <p>Secure Emirates-style system for managing Ramp & Logistics logs (C209/C208).</p>
+                    
+                    <h2>Setup</h2>
+                    <ul>
+                        <li>Copy .env.local.example → .env.local and fill in credentials.</li>
+                        <li>Run:
+                            <div class="code-block">
+                                <div class="code-line">npm install</div>
+                                <div class="code-line">npm run dev</div>
+                            </div>
+                        </li>
+                        <li>Deploy via Vercel → <a href="https://skyroute.uk" target="_blank">https://skyroute.uk</a></li>
+                    </ul>
+                    
+                    <h2>Features</h2>
+                    <ul>
+                        <li>Google Authentication with domain restrictions</li>
+                        <li>Firebase Firestore for data storage</li>
+                        <li>Admin settings panel for configuration</li>
+                        <li>Emirates/dnata brand styling</li>
+                    </ul>
+                </div>`
+            },
+            'settings': {
+                type: 'typescript',
+                content: `<div class="file-content">
+                    <div class="file-header">
+                        <div class="file-title">settings.tsx</div>
+                        <div class="file-type">React Component</div>
+                    </div>
+                    <div class="code-block">
+<div class="code-line"><span class="code-string">"use client"</span>;</div>
+<div class="code-line"><span class="code-keyword">import</span> { useState, useEffect } <span class="code-keyword">from</span> <span class="code-string">"react"</span>;</div>
+<div class="code-line"><span class="code-keyword">import</span> { db } <span class="code-keyword">from</span> <span class="code-string">"@/lib/firebase"</span>;</div>
+<div class="code-line"><span class="code-keyword">import</span> { doc, getDoc, setDoc } <span class="code-keyword">from</span> <span class="code-string">"firebase/firestore"</span>;</div>
+<div class="code-line"></div>
+<div class="code-line"><span class="code-keyword">export default function</span> <span class="code-function">SettingsPanel</span>() {</div>
+<div class="code-line">  <span class="code-keyword">const</span> [admins, setAdmins] = <span class="code-function">useState</span>&lt;string[]&gt;([]);</div>
+<div class="code-line">  <span class="code-keyword">const</span> [domains, setDomains] = <span class="code-function">useState</span>&lt;string[]&gt;([]);</div>
+<div class="code-line"></div>
+<div class="code-line">  <span class="code-function">useEffect</span>(() => {</div>
+<div class="code-line">    <span class="code-keyword">const</span> <span class="code-function">fetchSettings</span> = <span class="code-keyword">async</span> () => {</div>
+<div class="code-line">      <span class="code-keyword">const</span> snap = <span class="code-keyword">await</span> <span class="code-function">getDoc</span>(<span class="code-function">doc</span>(db, <span class="code-string">"settings"</span>, <span class="code-string">"config"</span>));</div>
+<div class="code-line">      <span class="code-keyword">if</span> (snap.<span class="code-function">exists</span>()) {</div>
+<div class="code-line">        <span class="code-function">setAdmins</span>(snap.<span class="code-function">data</span>().admins);</div>
+<div class="code-line">        <span class="code-function">setDomains</span>(snap.<span class="code-function">data</span>().domains);</div>
+<div class="code-line">      }</div>
+<div class="code-line">    };</div>
+<div class="code-line">    <span class="code-function">fetchSettings</span>();</div>
+<div class="code-line">  }, []);</div>
+<div class="code-line"></div>
+<div class="code-line">  <span class="code-keyword">const</span> <span class="code-function">saveSettings</span> = <span class="code-keyword">async</span> () => {</div>
+<div class="code-line">    <span class="code-keyword">await</span> <span class="code-function">setDoc</span>(<span class="code-function">doc</span>(db, <span class="code-string">"settings"</span>, <span class="code-string">"config"</span>), { admins, domains });</div>
+<div class="code-line">    <span class="code-function">alert</span>(<span class="code-string">"Settings saved"</span>);</div>
+<div class="code-line">  };</div>
+<div class="code-line"></div>
+<div class="code-line">  <span class="code-keyword">return</span> (</div>
+<div class="code-line">    &lt;div className=<span class="code-string">"p-8"</span>&gt;</div>
+<div class="code-line">      &lt;h2 className=<span class="code-string">"text-xl font-bold mb-4 text-red-700"</span>&gt;Admin Settings&lt;/h2&gt;</div>
+<div class="code-line">      &lt;div&gt;</div>
+<div class="code-line">        &lt;label&gt;Admin Emails&lt;/label&gt;</div>
+<div class="code-line">        &lt;textarea</div>
+<div class="code-line">          value={admins.<span class="code-function">join</span>(<span class="code-string">","</span>)}</div>
+<div class="code-line">          <span class="code-keyword">onChange</span>={(e) => <span class="code-function">setAdmins</span>(e.target.value.<span class="code-function">split</span>(<span class="code-string">","</span>))}</div>
+<div class="code-line">          className=<span class="code-string">"border p-2 w-full"</span></div>
+<div class="code-line">        /&gt;</div>
+<div class="code-line">      &lt;/div&gt;</div>
+<div class="code-line">      &lt;div&gt;</div>
+<div class="code-line">        &lt;label&gt;Allowed Domains&lt;/label&gt;</div>
+<div class="code-line">        &lt;textarea</div>
+<div class="code-line">          value={domains.<span class="code-function">join</span>(<span class="code-string">","</span>)}</div>
+<div class="code-line">          <span class="code-keyword">onChange</span>={(e) => <span class="code-function">setDomains</span>(e.target.value.<span class="code-function">split</span>(<span class="code-string">","</span>))}</div>
+<div class="code-line">          className=<span class="code-string">"border p-2 w-full"</span></div>
+<div class="code-line">        /&gt;</div>
+<div class="code-line">      &lt;/div&gt;</div>
+<div class="code-line">      &lt;button</div>
+<div class="code-line">        <span class="code-keyword">onClick</span>={saveSettings}</div>
+<div class="code-line">        className=<span class="code-string">"bg-red-600 text-white px-4 py-2 mt-4 rounded"</span></div>
+<div class="code-line">      &gt;</div>
+<div class="code-line">        Save</div>
+<div class="code-line">      &lt;/button&gt;</div>
+<div class="code-line">    &lt;/div&gt;</div>
+<div class="code-line">  );</div>
+<div class="code-line">}</div>
+                    </div>
+                </div>`
+            },
+            'auth': {
+                type: 'typescript',
+                content: `<div class="file-content">
+                    <div class="file-header">
+                        <div class="file-title">auth.ts</div>
+                        <div class="file-type">TypeScript</div>
+                    </div>
+                    <div class="code-block">
+<div class="code-line"><span class="code-keyword">import</span> { getAuth } <span class="code-keyword">from</span> <span class="code-string">"firebase/auth"</span>;</div>
+<div class="code-line"><span class="code-keyword">import</span> { signInWithPopup, GoogleAuthProvider } <span class="code-keyword">from</span> <span class="code-string">"firebase/auth"</span>;</div>
+<div class="code-line"><span class="code-keyword">const</span> provider = <span class="code-keyword">new</span> <span class="code-function">GoogleAuthProvider</span>();</div>
+<div class="code-line"><span class="code-keyword">export async function</span> <span class="code-function">googleLogin</span>() {</div>
+<div class="code-line">  <span class="code-keyword">const</span> auth = <span class="code-function">getAuth</span>();</div>
+<div class="code-line">  <span class="code-keyword">const</span> result = <span class="code-keyword">await</span> <span class="code-function">signInWithPopup</span>(auth, provider);</div>
+<div class="code-line">  <span class="code-keyword">const</span> domain = result.user.email?.<span class="code-function">split</span>(<span class="code-string">"@"</span>)[1];</div>
+<div class="code-line">  <span class="code-keyword">const</span> allowed = [<span class="code-string">"dnata.com"</span>, <span class="code-string">"gmail.com"</span>];</div>
+<div class="code-line">  <span class="code-keyword">if</span> (!allowed.<span class="code-function">includes</span>(domain!)) {</div>
+<div class="code-line">    <span class="code-keyword">throw new</span> <span class="code-function">Error</span>(<span class="code-string">"Unauthorized domain"</span>);</div>
+<div class="code-line">  }</div>
+<div class="code-line">  <span class="code-keyword">return</span> result.user;</div>
+<div class="code-line">}</div>
+                    </div>
+                </div>`
+            },
+            'firebase': {
+                type: 'typescript',
+                content: `<div class="file-content">
+                    <div class="file-header">
+                        <div class="file-title">firebase.ts</div>
+                        <div class="file-type">TypeScript</div>
+                    </div>
+                    <div class="code-block">
+<div class="code-line"><span class="code-keyword">import</span> { initializeApp, getApps } <span class="code-keyword">from</span> <span class="code-string">"firebase/app"</span>;</div>
+<div class="code-line"><span class="code-keyword">import</span> { getFirestore } <span class="code-keyword">from</span> <span class="code-string">"firebase/firestore"</span>;</div>
+<div class="code-line"><span class="code-keyword">const</span> firebaseConfig = {</div>
+<div class="code-line">  projectId: process.env.FIREBASE_PROJECT_ID,</div>
+<div class="code-line">  privateKey: process.env.FIREBASE_PRIVATE_KEY?.<span class="code-function">replace</span>(<span class="code-string">/\\n/g</span>, <span class="code-string">"\n"</span>),</div>
+<div class="code-line">  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,</div>
+<div class="code-line">};</div>
+<div class="code-line"><span class="code-keyword">const</span> app = !<span class="code-function">getApps</span>().length ? <span class="code-function">initializeApp</span>(firebaseConfig) : <span class="code-function">getApps</span>()[0];</div>
+<div class="code-line"><span class="code-keyword">export const</span> db = <span class="code-function">getFirestore</span>(app);</div>
+                    </div>
+                </div>`
+            },
+            'env': {
+                type: 'env',
+                content: `<div class="file-content">
+                    <div class="file-header">
+                        <div class="file-title">.env.local.example</div>
+                        <div class="file-type">Environment Variables</div>
+                    </div>
+                    <div class="code-block">
+<div class="code-line">NEXT_PUBLIC_APP_NAME=SkyRoute</div>
+<div class="code-line">NEXT_PUBLIC_ALLOWED_DOMAINS=dnata.com,gmail.com</div>
+<div class="code-line">GOOGLE_CLIENT_ID=your-google-client-id</div>
+<div class="code-line">GOOGLE_CLIENT_SECRET=your-google-client-secret</div>
+<div class="code-line">FIREBASE_PROJECT_ID=your-firestore-project-id</div>
+<div class="code-line">FIREBASE_PRIVATE_KEY=<span class="code-string">"your-private-key"</span></div>
+<div class="code-line">FIREBASE_CLIENT_EMAIL=your-service-account-email</div>
+                    </div>
+                </div>`
+            },
+            'globals-css': {
+                type: 'css',
+                content: `<div class="file-content">
+                    <div class="file-header">
+                        <div class="file-title">globals.css</div>
+                        <div class="file-type">CSS</div>
+                    </div>
+                    <div class="code-block">
+<div class="code-line"><span class="code-keyword">@tailwind</span> base;</div>
+<div class="code-line"><span class="code-keyword">@tailwind</span> components;</div>
+<div class="code-line"><span class="code-keyword">@tailwind</span> utilities;</div>
+<div class="code-line"><span class="code-variable">body</span> {</div>
+<div class="code-line">  <span class="code-variable">background</span>: <span class="code-string">#f9f9f9</span>;</div>
+<div class="code-line">  <span class="code-variable">color</span>: <span class="code-string">#333</span>;</div>
+<div class="code-line">}</div>
+                    </div>
+                </div>`
+            },
+            'theme-css': {
+                type: 'css',
+                content: `<div class="file-content">
+                    <div class="file-header">
+                        <div class="file-title">theme.css</div>
+                        <div class="file-type">CSS</div>
+                    </div>
+                    <div class="code-block">
+<div class="code-line"><span class="code-variable">:root</span> {</div>
+<div class="code-line">  <span class="code-variable">--color-primary</span>: <span class="code-string">#d71920</span>;</div>
+<div class="code-line">  <span class="code-variable">--color-accent</span>: <span class="code-string">#c4a56d</span>;</div>
+<div class="code-line">  <span class="code-variable">--color-bg</span>: <span class="code-string">#f9f9f9</span>;</div>
+<div class="code-line">}</div>
+                    </div>
+                </div>`
+            }
+        };
+
+        function showFile(fileId) {
+            // Update active file in navigation
+            document.querySelectorAll('.file-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Update file content
+            document.getElementById('file-content').innerHTML = files[fileId].content;
+        }
+    </script>
+</body>
+</html>
