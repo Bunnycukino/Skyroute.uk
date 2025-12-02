@@ -1,0 +1,30 @@
+SKYROUTE UK - LOCAL LOGISTICS SYSTEM
+====================================
+
+INSTRUKCJA URUCHOMIENIA:
+1. Zapisz wszystkie pliki w jednym folderze
+2. Otwórz plik index.html w przeglądarce (Chrome, Firefox, Edge)
+3. System działa lokalnie - nie wymaga połączenia z internetem
+
+FUNKCJONALNOŚCI:
+- Wprowadzanie danych RAMP (generuje C209)
+- Wprowadzanie danych LOGISTIC (przypisuje C208)
+- Śledzenie wygasających C209 (48h)
+- Rejestr reallokacji
+- Eksport do Excel
+- Import z Excel (podstawowy)
+- Zapisywanie danych w przeglądarce
+
+ZAPIS DANYCH:
+- Wszystkie dane są zapisywane w LocalStorage przeglądarki
+- Dane przetrwają zamknięcie przeglądarki
+- Regularnie eksportuj dane do Excel dla backupu
+
+UWAGA:
+- Czyść dane przeglądarki ostrożnie - usuniesz wszystkie dane systemu
+- Regularnie eksportuj dane do plików Excel
+- System działa tylko w nowoczesnych przeglądarkach
+
+WYMAGANE POŁĄCZENIE:
+- Tylko do początkowego załadowania Bootstrap/FontAwesome
+- Po załadowaniu system działa offline

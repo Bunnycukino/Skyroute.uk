@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyRoute UK - Local Logistics System</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✈️</text></svg>">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- SheetJS for Excel operations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-blue: #1a237e;
+            --secondary-blue: #283593;
+            --accent-blue: #3949ab;
+            --light-blue: #e8eaf6;
+            --success-green: #4caf50;
+            --warning-orange: #ff9800;
+            --danger-red: #f44336;
+            --gray-light: #f5f5f5;
+            --gray-medium: #9e9e9e;
+            --gray-dark: #616161;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header h1 {
+            font-weight: 700;
+            margin: 0;
+            font-size: 2.2rem;
+        }
+        
+        .header .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-top: 0.3rem;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo {
+            height: 60px;
+            width: 60px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+        
+        .main-container {
+            padding: 2rem 0;
+        }
+        
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            border: none;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background-color: var(--primary-blue);
+            color: white;
+            font-weight: 600;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 1rem 1.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: var(--gray-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 0.75rem;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 0.25rem rgba(57, 73, 171, 0.25);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-blue);
+            border-color: var(--secondary-blue);
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background-color: var(--success-green);
+            border-color: var(--success-green);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-orange);
+            border-color: var(--warning-orange);
+            color: white;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-red);
+            border-color: var(--danger-red);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .nav-tabs {
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .nav-tabs .nav-link {
+            color: var(--gray-dark);
+            font-weight: 500;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary-blue);
+            border-bottom: 3px solid var(--primary-blue);
+            background-color: transparent;
+        }
+        
+        .tab-content {
+            background-color: white;
+            border-radius: 0 0 12px 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-active {
+            background-color: var(--success-green);
+        }
+        
+        .status-pending {
+            background-color: var(--warning-orange);
+        }
+        
+        .status-expired {
+            background-color: var(--danger-red);
+        }
+        
+        .table-responsive {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table thead {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+        
+        .table th {
+            font-weight: 600;
+            border: none;
+            padding: 1rem;
+        }
+        
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-top: 1px solid #eee;
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(232, 234, 246, 0.3);
+        }
+        
+        .badge {
+            padding: 0.5em 0.8em;
+            font-weight: 600;
+            border-radius: 6px;
+        }
+        
+        .info-box {
+            background-color: var(--light-blue);
+            border-left: 4px solid var(--accent-blue);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1rem;
+        }
+        
+        .footer {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .pulse {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--success-green);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            }
+        }
+        
+        .file-input-container {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-input-container input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="logo-container">
+                    <div class="logo">✈️</div>
+                    <div>
+                        <h1>SkyRoute UK</h1>
+                        <div class="subtitle">Local Logistics Management System</div>
+                    </div>
+                </div>
+                <div class="system-status d-none d-md-flex">
+                    <div class="pulse"></div>
+                    <div>Mode: <strong>Local Storage</strong></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <div class="container">
+            <!-- File Operations -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-file-excel me-2"></i>Excel File Operations
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="info-box">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Import Excel:</strong> Load data from your existing Excel file. The system will try to map columns automatically.
+                                    </div>
+                                    <div class="file-input-container">
+                                        <button class="btn btn-primary w-100">
+                                            <i class="fas fa-upload me-2"></i>Import Excel File
+                                        </button>
+                                        <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv">
+                                    </div>
+                                    <div class="form-text mt-2">Supports .xlsx, .xls, .csv formats</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="info-box">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Export Data:</strong> Download all data as Excel files for backup or sharing.
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-success" id="exportAllBtn">
+                                            <i class="fas fa-download me-2"></i>Export All Data
+                                        </button>
+                                        <button class="btn btn-outline-primary" id="backupBtn">
+                                            <i class="fas fa-save me-2"></i>Backup to Browser
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-database me-2"></i>
+                                        <strong>Local Storage Status:</strong> 
+                                        <span id="storageStatus">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Summary -->
+            <div class="row mb-4">
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h3 class="text-primary" id="activeC209Count">0</h3>
+                            <p class="text-muted">Active C209</p>
+                            <i class="fas fa-clipboard-list fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h3 class="text-success" id="todayEntries">0</h3>
+                            <p class="text-muted">Today's Entries</p>
+                            <i class="fas fa-plane-departure fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h3 class="text-warning" id="pendingC209">0</h3>
+                            <p class="text-muted">Pending C208</p>
+                            <i class="fas fa-clock fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h3 class="text-danger" id="expiredCount">0</h3>
+                            <p class="text-muted">Expired C209</p>
+                            <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Tabs -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-edit me-2"></i>Logistics Input Forms
+                        </div>
+                        <div class="card-body">
+                            <ul class="nav nav-tabs" id="inputTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="ramp-tab" data-bs-toggle="tab" data-bs-target="#ramp" type="button" role="tab">RAMP INPUT</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="logistic-tab" data-bs-toggle="tab" data-bs-target="#logistic" type="button" role="tab">LOGISTIC INPUT</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="reallocation-tab" data-bs-toggle="tab" data-bs-target="#reallocation" type="button" role="tab">REALLOCATION REGISTER</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="expiry-tab" data-bs-toggle="tab" data-bs-target="#expiry" type="button" role="tab">EXPIRY TRACKER</button>
+                                </li>
+                            </ul>
+                            
+                            <div class="tab-content" id="inputTabsContent">
+                                <!-- RAMP INPUT Tab -->
+                                <div class="tab-pane fade show active" id="ramp" role="tabpanel">
+                                    <div class="info-box">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>RAMP INPUT Instructions:</strong> Enter container data from ramp operations. This creates a new C209 entry with pending C208 assignment.
+                                    </div>
+                                    
+                                    <form id="rampForm">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="rampCode" class="form-label">Container Code *</label>
+                                                <input type="text" class="form-control" id="rampCode" placeholder="Enter container code" required>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="rampPieces" class="form-label">Pieces</label>
+                                                <input type="number" class="form-control" id="rampPieces" placeholder="Number of pieces">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="rampFlight" class="form-label">Flight Number *</label>
+                                                <input type="text" class="form-control" id="rampFlight" placeholder="e.g., BA123" required>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="rampSign" class="form-label">Signature</label>
+                                                <input type="text" class="form-control" id="rampSign" placeholder="Operator name">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12 mb-3">
+                                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                                    <button type="button" class="btn btn-warning me-md-2" id="clearRampBtn">
+                                                        <i class="fas fa-eraser me-1"></i> Clear
+                                                    </button>
+                                                    <button type="submit" class="btn btn-primary" id="submitRampBtn">
+                                                        <i class="fas fa-paper-plane me-1"></i> Submit RAMP Entry
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    
+                                    <div class="mt-4">
+                                        <h5>Recently Added RAMP Entries</h5>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="rampEntriesTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>C209 Number</th>
+                                                        <th>Container Code</th>
+                                                        <th>Flight</th>
+                                                        <th>Pieces</th>
+                                                        <th>Date</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- Will be populated by JavaScript -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- LOGISTIC INPUT Tab -->
+                                <div class="tab-pane fade" id="logistic" role="tabpanel">
+                                    <div class="info-box">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>LOGISTIC INPUT Instructions:</strong> Enter C209 number to assign C208. Use "NEW BUILD" for new containers or enter existing C209 to complete the entry.
+                                    </div>
+                                    
+                                    <form id="logisticForm">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="logisticC209" class="form-label">C209 Number *</label>
+                                                <input type="text" class="form-control" id="logisticC209" placeholder="Enter C209 or 'NEW BUILD'" required>
+                                                <div class="form-text">Enter "NEW BUILD" for new containers</div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="logisticFlight" class="form-label">Flight Number *</label>
+                                                <input type="text" class="form-control" id="logisticFlight" placeholder="e.g., BA123" required>
+                                                <div class="form-text">Use "RW" prefix for rework flights</div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="logisticSign" class="form-label">Signature</label>
+                                                <input type="text" class="form-control" id="logisticSign" placeholder="Operator name">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="logisticDate" class="form-label">Flight Date</label>
+                                                <input type="date" class="form-control" id="logisticDate">
+                                                <div class="form-text">Leave empty for today's date</div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="logisticBarNumber" class="form-label">Bar Number</label>
+                                                <input type="text" class="form-control" id="logisticBarNumber" placeholder="Bar number">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="logisticPieces" class="form-label">Pieces</label>
+                                                <input type="number" class="form-control" id="logisticPieces" placeholder="Number of pieces">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12 mb-3">
+                                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                                    <button type="button" class="btn btn-warning me-md-2" id="clearLogisticBtn">
+                                                        <i class="fas fa-eraser me-1"></i> Clear
+                                                    </button>
+                                                    <button type="submit" class="btn btn-success" id="submitLogisticBtn">
+                                                        <i class="fas fa-check-circle me-1"></i> Submit LOGISTIC Entry
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    
+                                    <div class="row mt-4">
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header bg-info text-white">
+                                                    <i class="fas fa-list me-2"></i>Available C209 Numbers
+                                                </div>
+                                                <div class="card-body">
+                                                    <div id="availableC209List" class="mb-3">
+                                                        <p class="text-muted">Loading available C209 numbers...</p>
+                                                    </div>
+                                                    <button type="button" class="btn btn-outline-info" id="refreshC209Btn">
+                                                        <i class="fas fa-sync-alt me-1"></i> Refresh List
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header bg-secondary text-white">
+                                                    <i class="fas fa-history me-2"></i>Recent LOGISTIC Entries
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm" id="logisticEntriesTable">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>C209</th>
+                                                                    <th>C208</th>
+                                                                    <th>Flight</th>
+                                                                    <th>Date</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <!-- Will be populated by JavaScript -->
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- REALLOCATION REGISTER Tab -->
+                                <div class="tab-pane fade" id="reallocation" role="tabpanel">
+                                    <div class="info-box">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>REALLOCATION REGISTER:</strong> This table is automatically populated when C208 is entered. You can also manually trigger data population.
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <button type="button" class="btn btn-primary me-2" id="manualFillBtn">
+                                            <i class="fas fa-sync-alt me-1"></i> Manually Fill Register
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary" id="exportReallocBtn">
+                                            <i class="fas fa-download me-1"></i> Export to Excel
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="reallocationTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>BAR NUMBER</th>
+                                                    <th>C209 NUMBER</th>
+                                                    <th>FLIGHT NUMBER</th>
+                                                    <th>FLIGHT DATE</th>
+                                                    <th>DESTINATION</th>
+                                                    <th>C208</th>
+                                                    <th>BASE</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Will be populated by JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                
+                                <!-- EXPIRY TRACKER Tab -->
+                                <div class="tab-pane fade" id="expiry" role="tabpanel">
+                                    <div class="info-box">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>EXPIRY TRACKER:</strong> Monitors C209 numbers that have not been assigned a C208 within 48 hours. Expired numbers are marked and can be reused.
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <button type="button" class="btn btn-warning me-2" id="checkExpiryBtn">
+                                            <i class="fas fa-search me-1"></i> Check for Expired C209
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" id="clearExpiredBtn">
+                                            <i class="fas fa-trash-alt me-1"></i> Clear Expired Entries
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="expiryTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>C209 Number</th>
+                                                    <th>Creation Date</th>
+                                                    <th>Last Checked</th>
+                                                    <th>Status</th>
+                                                    <th>Hours Remaining</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Will be populated by JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- LOG Sheet Display -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-clipboard-list me-2"></i>C209 + C208 LOG Sheet
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-outline-primary btn-sm me-2" id="refreshLogBtn">
+                                    <i class="fas fa-sync-alt me-1"></i> Refresh
+                                </button>
+                                <button type="button" class="btn btn-outline-success btn-sm" id="exportLogBtn">
+                                    <i class="fas fa-download me-1"></i> Export LOG
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped" id="logSheetTable">
+                                    <thead>
+                                        <tr>
+                                            <th>C209 Number</th>
+                                            <th>Date</th>
+                                            <th>Time</th>
+                                            <th>Bar Number</th>
+                                            <th>Pieces</th>
+                                            <th>Flight Number</th>
+                                            <th>Signature</th>
+                                            <th>C208 Number</th>
+                                            <th>New Flight</th>
+                                            <th>New Date</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>SkyRoute UK - Local Version</h5>
+                    <p>All data stored in your browser's local storage</p>
+                    <p>No internet required after initial load</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h5>Local Storage Info</h5>
+                    <p>Data persists between browser sessions</p>
+                    <p>Clear browser data to reset system</p>
+                    <p>© 2023 SkyRoute UK</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // System Configuration
+        const SYSTEM_CONFIG = {
+            sheets: {
+                RAMP_INPUT: "RAMP INPUT",
+                LOGISTIC_INPUT: "LOGISTIC INPUT",
+                LOG: "C209 + C208 LOG",
+                FORM: "InBondForm",
+                EXPIRY_TRACKER: "C209 Expiry Tracker",
+                REALLOCATION: "REALLOCATION REGISTER"
+            },
+            expiryHours: 48,
+            autoRefresh: true,
+            refreshInterval: 30000 // 30 seconds
+        };
+
+        // Data Storage in Browser's Local Storage
+        const STORAGE_KEYS = {
+            LOG_ENTRIES: 'skyroutelog_entries',
+            EXPIRY_TRACKER: 'skyroutelog_expiry',
+            REALLOCATION: 'skyroutelog_reallocation',
+            COUNTERS: 'skyroutelog_counters',
+            SETTINGS: 'skyroutelog_settings'
+        };
+
+        // Data Store
+        let dataStore = {
+            logEntries: [],
+            expiryTracker: [],
+            reallocationRegister: [],
+            counters: {
+                nextC209Number: 1,
+                nextC208Number: 1,
+                currentMonthPrefix: getCurrentMonthPrefix()
+            }
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current date in logistic form
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('logisticDate').value = today;
+            
+            // Load data from local storage
+            loadFromLocalStorage();
+            
+            // Update storage status
+            updateStorageStatus();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Start auto-refresh if enabled
+            if (SYSTEM_CONFIG.autoRefresh) {
+                setInterval(refreshAllData, SYSTEM_CONFIG.refreshInterval);
+            }
+        });
+
+        // Get current month prefix (JAN, FEB, etc.)
+        function getCurrentMonthPrefix() {
+            const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+            return months[new Date().getMonth()];
+        }
+
+        // Load data from local storage
+        function loadFromLocalStorage() {
+            try {
+                // Load log entries
+                const savedLogEntries = localStorage.getItem(STORAGE_KEYS.LOG_ENTRIES);
+                if (savedLogEntries) {
+                    dataStore.logEntries = JSON.parse(savedLogEntries);
+                }
+                
+                // Load expiry tracker
+                const savedExpiry = localStorage.getItem(STORAGE_KEYS.EXPIRY_TRACKER);
+                if (savedExpiry) {
+                    dataStore.expiryTracker = JSON.parse(savedExpiry);
+                }
+                
+                // Load reallocation register
+                const savedReallocation = localStorage.getItem(STORAGE_KEYS.REALLOCATION);
+                if (savedReallocation) {
+                    dataStore.reallocationRegister = JSON.parse(savedReallocation);
+                }
+                
+                // Load counters
+                const savedCounters = localStorage.getItem(STORAGE_KEYS.COUNTERS);
+                if (savedCounters) {
+                    dataStore.counters = JSON.parse(savedCounters);
+                }
+                
+                // If no data exists, create sample data for demo
+                if (dataStore.logEntries.length === 0) {
+                    generateSampleData();
+                }
+                
+                // Update UI
+                updateDashboardCounts();
+                refreshLogTable();
+                refreshExpiryTable();
+                refreshReallocationTable();
+                refreshAvailableC209List();
+                refreshRecentEntries();
+                
+            } catch (error) {
+                console.error('Error loading from local storage:', error);
+                showAlert('Error loading saved data. Starting with fresh data.', 'warning');
+                generateSampleData();
+            }
+        }
+
+        // Save data to local storage
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.LOG_ENTRIES, JSON.stringify(dataStore.logEntries));
+                localStorage.setItem(STORAGE_KEYS.EXPIRY_TRACKER, JSON.stringify(dataStore.expiryTracker));
+                localStorage.setItem(STORAGE_KEYS.REALLOCATION, JSON.stringify(dataStore.reallocationRegister));
+                localStorage.setItem(STORAGE_KEYS.COUNTERS, JSON.stringify(dataStore.counters));
+                
+                updateStorageStatus();
+                
+            } catch (error) {
+                console.error('Error saving to local storage:', error);
+                showAlert('Error saving data. Storage might be full.', 'danger');
+            }
+        }
+
+        // Update storage status display
+        function updateStorageStatus() {
+            const totalEntries = dataStore.logEntries.length;
+            const expiryEntries = dataStore.expiryTracker.length;
+            const reallocEntries = dataStore.reallocationRegister.length;
+            
+            const statusText = `${totalEntries} log entries, ${expiryEntries} expiry records, ${reallocEntries} reallocation records`;
+            document.getElementById('storageStatus').textContent = statusText;
+        }
+
+        // Generate sample data for demonstration
+        function generateSampleData() {
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const twoDaysAgo = new Date(today);
+            twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+            
+            // Sample log entries
+            dataStore.logEntries = [
+                {
+                    id: generateId(),
+                    c209: 'JAN0001',
+                    date: formatDate(today),
+                    time: '09:15:00',
+                    barNumber: 'BAR12345',
+                    pieces: 12,
+                    flight: 'BA123',
+                    sign: 'J. Smith',
+                    c208: 'JAN0001',
+                    newFlight: '',
+                    newDate: '',
+                    newSign: '',
+                    status: 'Completed',
+                    createdAt: today.toISOString()
+                },
+                {
+                    id: generateId(),
+                    c209: 'JAN0002',
+                    date: formatDate(yesterday),
+                    time: '14:30:00',
+                    barNumber: 'BAR12346',
+                    pieces: 8,
+                    flight: 'VS456',
+                    sign: 'M. Johnson',
+                    c208: '',
+                    newFlight: '',
+                    newDate: '',
+                    newSign: '',
+                    status: 'Pending C208',
+                    createdAt: yesterday.toISOString()
+                },
+                {
+                    id: generateId(),
+                    c209: 'DEC0035',
+                    date: formatDate(twoDaysAgo),
+                    time: '11:45:00',
+                    barNumber: 'BAR12347',
+                    pieces: 15,
+                    flight: 'LH789',
+                    sign: 'A. Williams',
+                    c208: 'DEC0035',
+                    newFlight: 'LH789',
+                    newDate: formatDate(twoDaysAgo),
+                    newSign: 'A. Williams',
+                    status: 'Completed',
+                    createdAt: twoDaysAgo.toISOString()
+                }
+            ];
+            
+            // Sample expiry tracker entries
+            dataStore.expiryTracker = [
+                {
+                    id: generateId(),
+                    c209: 'JAN0002',
+                    creationDate: formatDateTime(yesterday),
+                    lastChecked: formatDateTime(today),
+                    status: 'Active',
+                    hoursRemaining: 24
+                },
+                {
+                    id: generateId(),
+                    c209: 'DEC0034',
+                    creationDate: formatDateTime(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 3)),
+                    lastChecked: formatDateTime(today),
+                    status: 'Expired',
+                    hoursRemaining: -24
+                }
+            ];
+            
+            // Sample reallocation register
+            dataStore.reallocationRegister = [
+                {
+                    id: generateId(),
+                    barNumber: 'BAR12345',
+                    c209: 'JAN0001',
+                    flight: 'BA123',
+                    date: formatDate(today),
+                    destination: '',
+                    c208: 'JAN0001',
+                    base: ''
+                },
+                {
+                    id: generateId(),
+                    barNumber: 'BAR12347',
+                    c209: 'DEC0035',
+                    flight: 'LH789',
+                    date: formatDate(twoDaysAgo),
+                    destination: '',
+                    c208: 'DEC0035',
+                    base: ''
+                }
+            ];
+            
+            // Set counters
+            dataStore.counters.nextC209Number = 3;
+            dataStore.counters.nextC208Number = 2;
+            dataStore.counters.currentMonthPrefix = getCurrentMonthPrefix();
+            
+            // Save to localStorage
+            saveToLocalStorage();
+        }
+
+        // Generate unique ID
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        // Format date as dd/mm/yyyy
+        function formatDate(date) {
+            const d = new Date(date);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        // Format date and time
+        function formatDateTime(date) {
+            return formatDate(date) + ' ' + date.toLocaleTimeString('en-GB');
+        }
+
+        // Setup all event listeners
+        function setupEventListeners() {
+            // RAMP form submission
+            document.getElementById('rampForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitRampEntry();
+            });
+            
+            // LOGISTIC form submission
+            document.getElementById('logisticForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitLogisticEntry();
+            });
+            
+            // Clear buttons
+            document.getElementById('clearRampBtn').addEventListener('click', clearRampForm);
+            document.getElementById('clearLogisticBtn').addEventListener('click', clearLogisticForm);
+            
+            // Other buttons
+            document.getElementById('refreshC209Btn').addEventListener('click', refreshAvailableC209List);
+            document.getElementById('manualFillBtn').addEventListener('click', manualFillReallocation);
+            document.getElementById('checkExpiryBtn').addEventListener('click', checkExpiredC209);
+            document.getElementById('clearExpiredBtn').addEventListener('click', clearExpiredEntries);
+            document.getElementById('refreshLogBtn').addEventListener('click', refreshAllData);
+            document.getElementById('exportLogBtn').addEventListener('click', exportLogToExcel);
+            document.getElementById('exportReallocBtn').addEventListener('click', exportReallocationToExcel);
+            document.getElementById('exportAllBtn').addEventListener('click', exportAllData);
+            document.getElementById('backupBtn').addEventListener('click', backupData);
+            
+            // Excel file import
+            document.getElementById('excelFileInput').addEventListener('change', handleExcelImport);
+            
+            // Tab change events
+            document.getElementById('ramp-tab').addEventListener('click', refreshRecentEntries);
+            document.getElementById('logistic-tab').addEventListener('click', refreshAvailableC209List);
+        }
+
+        // Submit RAMP entry
+        function submitRampEntry() {
+            const containerCode = document.getElementById('rampCode').value;
+            const pieces = document.getElementById('rampPieces').value;
+            const flight = document.getElementById('rampFlight').value;
+            const sign = document.getElementById('rampSign').value;
+            
+            if (!containerCode || !flight) {
+                showAlert('Please fill in all required fields (Container Code and Flight Number).', 'danger');
+                return;
+            }
+            
+            // Generate next C209 number
+            const nextC209 = dataStore.counters.currentMonthPrefix + String(dataStore.counters.nextC209Number).padStart(4, '0');
+            dataStore.counters.nextC209Number++;
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-GB');
+            
+            // Add to log entries
+            const newEntry = {
+                id: generateId(),
+                c209: nextC209,
+                date: formatDate(now),
+                time: timeString,
+                barNumber: containerCode,
+                pieces: pieces || 0,
+                flight: flight,
+                sign: sign || '',
+                c208: '',
+                newFlight: '',
+                newDate: '',
+                newSign: '',
+                status: 'Pending C208',
+                createdAt: now.toISOString()
+            };
+            
+            dataStore.logEntries.unshift(newEntry);
+            
+            // Add to expiry tracker
+            dataStore.expiryTracker.push({
+                id: generateId(),
+                c209: nextC209,
+                creationDate: formatDateTime(now),
+                lastChecked: formatDateTime(now),
+                status: 'Active',
+                hoursRemaining: SYSTEM_CONFIG.expiryHours
+            });
+            
+            // Show success message
+            showAlert(`RAMP entry created successfully! C209: ${nextC209}`, 'success');
+            
+            // Clear form
+            clearRampForm();
+            
+            // Save and update UI
+            saveToLocalStorage();
+            updateDashboardCounts();
+            refreshLogTable();
+            refreshExpiryTable();
+            refreshAvailableC209List();
+            refreshRecentEntries();
+        }
+
+        // Submit LOGISTIC entry
+        function submitLogisticEntry() {
+            const c209Input = document.getElementById('logisticC209').value.toUpperCase();
+            const flight = document.getElementById('logisticFlight').value;
+            const sign = document.getElementById('logisticSign').value;
+            const dateInput = document.getElementById('logisticDate').value;
+            const barNumber = document.getElementById('logisticBarNumber').value;
+            const pieces = document.getElementById('logisticPieces').value;
+            
+            if (!c209Input || !flight) {
+                showAlert('Please fill in all required fields (C209 Number and Flight Number).', 'danger');
+                return;
+            }
+            
+            const now = new Date();
+            const flightDate = dateInput ? new Date(dateInput) : now;
+            const timeString = now.toLocaleTimeString('en-GB');
+            
+            if (c209Input === 'NEW BUILD') {
+                // Handle NEW BUILD
+                const nextC208 = dataStore.counters.currentMonthPrefix + String(dataStore.counters.nextC208Number).padStart(4, '0');
+                dataStore.counters.nextC208Number++;
+                
+                // Add new entry
+                const newEntry = {
+                    id: generateId(),
+                    c209: 'NEW BUILD',
+                    date: formatDate(now),
+                    time: timeString,
+                    barNumber: barNumber || '',
+                    pieces: pieces || 0,
+                    flight: flight,
+                    sign: sign || '',
+                    c208: flight.toUpperCase().startsWith('RW') ? 'RW' : nextC208,
+                    newFlight: flight,
+                    newDate: formatDate(flightDate),
+                    newSign: sign || '',
+                    status: 'New Build',
+                    createdAt: now.toISOString()
+                };
+                
+                dataStore.logEntries.unshift(newEntry);
+                
+                // Add to reallocation register
+                dataStore.reallocationRegister.push({
+                    id: generateId(),
+                    barNumber: barNumber || '',
+                    c209: 'NEW BUILD',
+                    flight: flight,
+                    date: formatDate(flightDate),
+                    destination: '',
+                    c208: flight.toUpperCase().startsWith('RW') ? 'RW' : nextC208,
+                    base: ''
+                });
+                
+                showAlert(`NEW BUILD created successfully! C208: ${flight.toUpperCase().startsWith('RW') ? 'RW' : nextC208}`, 'success');
+                
+            } else {
+                // Handle existing C209
+                const existingEntryIndex = dataStore.logEntries.findIndex(entry => entry.c209 === c209Input);
+                
+                if (existingEntryIndex === -1) {
+                    showAlert(`C209 number ${c209Input} not found. Please enter a valid C209 number.`, 'danger');
+                    return;
+                }
+                
+                const entry = dataStore.logEntries[existingEntryIndex];
+                
+                // Check if C208 already exists
+                let c208Number = entry.c208;
+                if (!c208Number) {
+                    // Generate new C208
+                    c208Number = dataStore.counters.currentMonthPrefix + String(dataStore.counters.nextC208Number).padStart(4, '0');
+                    dataStore.counters.nextC208Number++;
+                }
+                
+                // For RW flights, use RW as C208
+                if (flight.toUpperCase().startsWith('RW')) {
+                    c208Number = 'RW';
+                }
+                
+                // Update the entry
+                dataStore.logEntries[existingEntryIndex].c208 = c208Number;
+                dataStore.logEntries[existingEntryIndex].newFlight = flight;
+                dataStore.logEntries[existingEntryIndex].newDate = formatDate(flightDate);
+                dataStore.logEntries[existingEntryIndex].newSign = sign || '';
+                dataStore.logEntries[existingEntryIndex].status = 'Completed';
+                
+                // Update bar number and pieces if provided
+                if (barNumber) {
+                    dataStore.logEntries[existingEntryIndex].barNumber = barNumber;
+                }
+                if (pieces) {
+                    dataStore.logEntries[existingEntryIndex].pieces = pieces;
+                }
+                
+                // Remove from expiry tracker
+                dataStore.expiryTracker = dataStore.expiryTracker.filter(item => item.c209 !== c209Input);
+                
+                // Add to reallocation register
+                dataStore.reallocationRegister.push({
+                    id: generateId(),
+                    barNumber: barNumber || entry.barNumber,
+                    c209: c209Input,
+                    flight: flight,
+                    date: formatDate(flightDate),
+                    destination: '',
+                    c208: c208Number,
+                    base: ''
+                });
+                
+                showAlert(`LOGISTIC entry updated successfully! C209: ${c209Input}, C208: ${c208Number}`, 'success');
+            }
+            
+            // Clear form
+            clearLogisticForm();
+            
+            // Save and update UI
+            saveToLocalStorage();
+            updateDashboardCounts();
+            refreshLogTable();
+            refreshExpiryTable();
+            refreshReallocationTable();
+            refreshAvailableC209List();
+            refreshRecentEntries();
+        }
+
+        // Clear RAMP form
+        function clearRampForm() {
+            document.getElementById('rampForm').reset();
+            document.getElementById('rampCode').focus();
+        }
+
+        // Clear LOGISTIC form
+        function clearLogisticForm() {
+            document.getElementById('logisticForm').reset();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('logisticDate').value = today;
+            document.getElementById('logisticC209').focus();
+        }
+
+        // Update dashboard counts
+        function updateDashboardCounts() {
+            const activeC209 = dataStore.logEntries.filter(entry => entry.status === 'Pending C208').length;
+            const today = formatDate(new Date());
+            const todayEntries = dataStore.logEntries.filter(entry => entry.date === today).length;
+            const pendingC209 = dataStore.logEntries.filter(entry => entry.status === 'Pending C208').length;
+            const expiredCount = dataStore.expiryTracker.filter(item => item.status === 'Expired').length;
+            
+            document.getElementById('activeC209Count').textContent = activeC209;
+            document.getElementById('todayEntries').textContent = todayEntries;
+            document.getElementById('pendingC209').textContent = pendingC209;
+            document.getElementById('expiredCount').textContent = expiredCount;
+        }
+
+        // Refresh LOG table
+        function refreshLogTable() {
+            const tbody = document.querySelector('#logSheetTable tbody');
+            tbody.innerHTML = '';
+            
+            dataStore.logEntries.forEach(entry => {
+                const row = document.createElement('tr');
+                
+                // Determine status badge
+                let statusBadge = '';
+                if (entry.status === 'Completed') {
+                    statusBadge = '<span class="badge bg-success">Completed</span>';
+                } else if (entry.status === 'Pending C208') {
+                    statusBadge = '<span class="badge bg-warning">Pending C208</span>';
+                } else if (entry.status === 'New Build') {
+                    statusBadge = '<span class="badge bg-info">New Build</span>';
+                }
+                
+                row.innerHTML = `
+                    <td><strong>${entry.c209}</strong></td>
+                    <td>${entry.date}</td>
+                    <td>${entry.time}</td>
+                    <td>${entry.barNumber}</td>
+                    <td>${entry.pieces}</td>
+                    <td>${entry.flight}</td>
+                    <td>${entry.sign}</td>
+                    <td><strong>${entry.c208 || '-'}</strong></td>
+                    <td>${entry.newFlight || '-'}</td>
+                    <td>${entry.newDate || '-'}</td>
+                    <td>${statusBadge}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Refresh expiry table
+        function refreshExpiryTable() {
+            const tbody = document.querySelector('#expiryTable tbody');
+            tbody.innerHTML = '';
+            
+            // Update hours remaining for all active entries
+            dataStore.expiryTracker.forEach(item => {
+                if (item.status === 'Active') {
+                    const creationDate = new Date(item.creationDate);
+                    const now = new Date();
+                    const hoursDiff = Math.floor((now - creationDate) / (1000 * 60 * 60));
+                    item.hoursRemaining = SYSTEM_CONFIG.expiryHours - hoursDiff;
+                    
+                    if (item.hoursRemaining <= 0) {
+                        item.status = 'Expired';
+                    }
+                }
+            });
+            
+            dataStore.expiryTracker.forEach(item => {
+                const row = document.createElement('tr');
+                
+                // Determine status indicator
+                let statusIndicator = '';
+                let statusText = '';
+                if (item.status === 'Active') {
+                    statusIndicator = '<span class="status-indicator status-active"></span>';
+                    statusText = `<span class="badge bg-success">Active (${item.hoursRemaining}h)</span>`;
+                } else {
+                    statusIndicator = '<span class="status-indicator status-expired"></span>';
+                    statusText = '<span class="badge bg-danger">Expired</span>';
+                }
+                
+                row.innerHTML = `
+                    <td>${statusIndicator}<strong>${item.c209}</strong></td>
+                    <td>${item.creationDate}</td>
+                    <td>${item.lastChecked}</td>
+                    <td>${statusText}</td>
+                    <td>${item.hoursRemaining > 0 ? item.hoursRemaining + ' hours' : 'Expired'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeFromExpiry('${item.c209}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            saveToLocalStorage();
+        }
+
+        // Refresh reallocation table
+        function refreshReallocationTable() {
+            const tbody = document.querySelector('#reallocationTable tbody');
+            tbody.innerHTML = '';
+            
+            dataStore.reallocationRegister.forEach(item => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${item.barNumber}</td>
+                    <td><strong>${item.c209}</strong></td>
+                    <td>${item.flight}</td>
+                    <td>${item.date}</td>
+                    <td>${item.destination || ''}</td>
+                    <td><strong>${item.c208}</strong></td>
+                    <td>${item.base || ''}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Refresh available C209 list
+        function refreshAvailableC209List() {
+            const container = document.getElementById('availableC209List');
+            const pendingC209 = dataStore.logEntries
+                .filter(entry => entry.status === 'Pending C208')
+                .map(entry => entry.c209);
+            
+            if (pendingC209.length === 0) {
+                container.innerHTML = '<p class="text-muted">No pending C209 numbers available.</p>';
+                return;
+            }
+            
+            let html = '<div class="d-flex flex-wrap gap-2">';
+            pendingC209.forEach(c209 => {
+                html += `<span class="badge bg-primary" style="cursor: pointer" onclick="fillC209Input('${c209}')">${c209}</span>`;
+            });
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+
+        // Fill C209 input when clicking on badge
+        function fillC209Input(c209Number) {
+            document.getElementById('logisticC209').value = c209Number;
+            document.getElementById('logisticFlight').focus();
+        }
+
+        // Refresh recent entries for RAMP and LOGISTIC
+        function refreshRecentEntries() {
+            // RAMP entries
+            const rampTbody = document.querySelector('#rampEntriesTable tbody');
+            rampTbody.innerHTML = '';
+            
+            const recentRampEntries = dataStore.logEntries
+                .filter(entry => entry.c209 !== 'NEW BUILD' && entry.status === 'Pending C208')
+                .slice(0, 5);
+            
+            recentRampEntries.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${entry.c209}</strong></td>
+                    <td>${entry.barNumber}</td>
+                    <td>${entry.flight}</td>
+                    <td>${entry.pieces}</td>
+                    <td>${entry.date}</td>
+                    <td><span class="badge bg-warning">Pending</span></td>
+                `;
+                rampTbody.appendChild(row);
+            });
+            
+            // LOGISTIC entries
+            const logisticTbody = document.querySelector('#logisticEntriesTable tbody');
+            logisticTbody.innerHTML = '';
+            
+            const recentLogisticEntries = dataStore.logEntries
+                .filter(entry => entry.c208 && entry.status !== 'Pending C208')
+                .slice(0, 5);
+            
+            recentLogisticEntries.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${entry.c209}</strong></td>
+                    <td><strong>${entry.c208}</strong></td>
+                    <td>${entry.newFlight || entry.flight}</td>
+                    <td>${entry.newDate || entry.date}</td>
+                `;
+                logisticTbody.appendChild(row);
+            });
+        }
+
+        // Manual fill reallocation register
+        function manualFillReallocation() {
+            showAlert('REALLOCATION REGISTER has been manually updated!', 'info');
+            refreshReallocationTable();
+        }
+
+        // Check for expired C209
+        function checkExpiredC209() {
+            const expiredEntries = dataStore.expiryTracker.filter(item => item.status === 'Expired');
+            
+            if (expiredEntries.length === 0) {
+                showAlert('No expired C209 numbers found.', 'info');
+            } else {
+                const expiredList = expiredEntries.map(item => item.c209).join(', ');
+                showAlert(`Expired C209 numbers: ${expiredList}`, 'warning');
+            }
+            
+            refreshExpiryTable();
+            updateDashboardCounts();
+        }
+
+        // Clear expired entries
+        function clearExpiredEntries() {
+            const expiredCount = dataStore.expiryTracker.filter(item => item.status === 'Expired').length;
+            dataStore.expiryTracker = dataStore.expiryTracker.filter(item => item.status !== 'Expired');
+            
+            showAlert(`Cleared ${expiredCount} expired entries.`, 'info');
+            saveToLocalStorage();
+            refreshExpiryTable();
+            updateDashboardCounts();
+        }
+
+        // Remove specific entry from expiry tracker
+        function removeFromExpiry(c209Number) {
+            dataStore.expiryTracker = dataStore.expiryTracker.filter(item => item.c209 !== c209Number);
+            saveToLocalStorage();
+            refreshExpiryTable();
+            updateDashboardCounts();
+            showAlert(`Removed ${c209Number} from expiry tracker.`, 'info');
+        }
+
+        // Refresh all data
+        function refreshAllData() {
+            updateDashboardCounts();
+            refreshLogTable();
+            refreshExpiryTable();
+            refreshReallocationTable();
+            refreshAvailableC209List();
+            refreshRecentEntries();
+        }
+
+        // Export LOG to Excel
+        function exportLogToExcel() {
+            try {
+                const wb = XLSX.utils.book_new();
+                
+                // Prepare data for LOG sheet
+                const logData = [
+                    ['C209 Number', 'Date', 'Time', 'Bar Number', 'Pieces', 'Flight Number', 'Signature', 'C208 Number', 'New Flight', 'New Date', 'New Signature', 'Status', 'Created At']
+                ];
+                
+                dataStore.logEntries.forEach(entry => {
+                    logData.push([
+                        entry.c209,
+                        entry.date,
+                        entry.time,
+                        entry.barNumber,
+                        entry.pieces,
+                        entry.flight,
+                        entry.sign,
+                        entry.c208,
+                        entry.newFlight,
+                        entry.newDate,
+                        entry.newSign,
+                        entry.status,
+                        entry.createdAt
+                    ]);
+                });
+                
+                const ws = XLSX.utils.aoa_to_sheet(logData);
+                XLSX.utils.book_append_sheet(wb, ws, "C209 + C208 LOG");
+                
+                // Export to file
+                const filename = `SkyRoute_LOG_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, filename);
+                
+                showAlert('LOG exported to Excel successfully.', 'success');
+            } catch (error) {
+                console.error('Error exporting to Excel:', error);
+                showAlert('Error exporting to Excel. Please try again.', 'danger');
+            }
+        }
+
+        // Export reallocation to Excel
+        function exportReallocationToExcel() {
+            try {
+                const wb = XLSX.utils.book_new();
+                
+                // Prepare data for REALLOCATION sheet
+                const reallocData = [
+                    ['BAR NUMBER', 'C209 NUMBER', 'FLIGHT NUMBER', 'FLIGHT DATE', 'DESTINATION', 'C208', 'BASE']
+                ];
+                
+                dataStore.reallocationRegister.forEach(item => {
+                    reallocData.push([
+                        item.barNumber,
+                        item.c209,
+                        item.flight,
+                        item.date,
+                        item.destination,
+                        item.c208,
+                        item.base
+                    ]);
+                });
+                
+                const ws = XLSX.utils.aoa_to_sheet(reallocData);
+                XLSX.utils.book_append_sheet(wb, ws, "REALLOCATION REGISTER");
+                
+                // Export to file
+                const filename = `SkyRoute_Reallocation_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, filename);
+                
+                showAlert('Reallocation Register exported to Excel successfully.', 'success');
+            } catch (error) {
+                console.error('Error exporting to Excel:', error);
+                showAlert('Error exporting to Excel. Please try again.', 'danger');
+            }
+        }
+
+        // Export all data
+        function exportAllData() {
+            try {
+                const wb = XLSX.utils.book_new();
+                
+                // LOG sheet
+                const logData = [
+                    ['C209 Number', 'Date', 'Time', 'Bar Number', 'Pieces', 'Flight Number', 'Signature', 'C208 Number', 'New Flight', 'New Date', 'New Signature', 'Status']
+                ];
+                
+                dataStore.logEntries.forEach(entry => {
+                    logData.push([
+                        entry.c209,
+                        entry.date,
+                        entry.time,
+                        entry.barNumber,
+                        entry.pieces,
+                        entry.flight,
+                        entry.sign,
+                        entry.c208,
+                        entry.newFlight,
+                        entry.newDate,
+                        entry.newSign,
+                        entry.status
+                    ]);
+                });
+                
+                const ws1 = XLSX.utils.aoa_to_sheet(logData);
+                XLSX.utils.book_append_sheet(wb, ws1, "LOG Sheet");
+                
+                // Expiry Tracker sheet
+                const expiryData = [
+                    ['C209 Number', 'Creation Date', 'Last Checked', 'Status', 'Hours Remaining']
+                ];
+                
+                dataStore.expiryTracker.forEach(item => {
+                    expiryData.push([
+                        item.c209,
+                        item.creationDate,
+                        item.lastChecked,
+                        item.status,
+                        item.hoursRemaining
+                    ]);
+                });
+                
+                const ws2 = XLSX.utils.aoa_to_sheet(expiryData);
+                XLSX.utils.book_append_sheet(wb, ws2, "Expiry Tracker");
+                
+                // Reallocation Register sheet
+                const reallocData = [
+                    ['BAR NUMBER', 'C209 NUMBER', 'FLIGHT NUMBER', 'FLIGHT DATE', 'DESTINATION', 'C208', 'BASE']
+                ];
+                
+                dataStore.reallocationRegister.forEach(item => {
+                    reallocData.push([
+                        item.barNumber,
+                        item.c209,
+                        item.flight,
+                        item.date,
+                        item.destination,
+                        item.c208,
+                        item.base
+                    ]);
+                });
+                
+                const ws3 = XLSX.utils.aoa_to_sheet(reallocData);
+                XLSX.utils.book_append_sheet(wb, ws3, "Reallocation Register");
+                
+                // Export to file
+                const filename = `SkyRoute_Full_Export_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, filename);
+                
+                showAlert('All data exported to Excel successfully.', 'success');
+            } catch (error) {
+                console.error('Error exporting all data:', error);
+                showAlert('Error exporting data. Please try again.', 'danger');
+            }
+        }
+
+        // Backup data to browser
+        function backupData() {
+            const backupData = {
+                logEntries: dataStore.logEntries,
+                expiryTracker: dataStore.expiryTracker,
+                reallocationRegister: dataStore.reallocationRegister,
+                counters: dataStore.counters,
+                timestamp: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `SkyRoute_Backup_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showAlert('Backup created and downloaded successfully.', 'success');
+        }
+
+        // Handle Excel file import
+        function handleExcelImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Process each sheet
+                    workbook.SheetNames.forEach(sheetName => {
+                        const worksheet = workbook.Sheets[sheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        
+                        console.log(`Processing sheet: ${sheetName}`, jsonData);
+                        
+                        // You can add logic here to map Excel columns to your data structure
+                        // This would depend on your specific Excel file structure
+                    });
+                    
+                    showAlert('Excel file imported successfully. Please check console for data.', 'success');
+                    
+                    // Reset file input
+                    event.target.value = '';
+                    
+                } catch (error) {
+                    console.error('Error importing Excel file:', error);
+                    showAlert('Error importing Excel file. Please check the format.', 'danger');
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Show alert message
+        function showAlert(message, type) {
+            // Remove any existing alerts
+            const existingAlert = document.querySelector('.alert-dismissible:not(.alert-info)');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+            alertDiv.style.zIndex = '9999';
+            alertDiv.style.minWidth = '300px';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.classList.remove('show');
+                    setTimeout(() => {
+                        if (alertDiv.parentNode) {
+                            alertDiv.remove();
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+
+        // Make functions available globally for onclick handlers
+        window.removeFromExpiry = removeFromExpiry;
+        window.fillC209Input = fillC209Input;
+    </script>
+</body>
+</html>
