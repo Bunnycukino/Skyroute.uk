@@ -1,6 +1,7 @@
 {
-  "buildCommand": "cd src/base44 && npm install && npm run build",
-  "outputDirectory": "src/base44/dist",
   "framework": "vite",
-  "installCommand": "cd src/base44 && npm install"
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install"
 }
