@@ -1,106 +1,62 @@
-# SkyRoute UK
+# SkyRoute UK - C209/C208 Management System
 
-Aplikacja do zarządzania lotami bazująca na Base44.
+Complete cargo documentation and tracking system for Emirates SkyRoute.
 
-## 🚀 Deployment na Vercel
+## Features
 
-### Automatyczne wdrożenie
+- ✅ RAMP INPUT - Create C209 entries
+- ✅ LOGISTIC INPUT - Generate C208 numbers
+- ✅ Auto-generate monthly prefixed numbers (e.g., DEC0001)
+- ✅ NEW BUILD support
+- ✅ RW flight handling
+- ✅ 48-hour expiry tracking
+- ✅ Auto-backup every 6 hours
+- ✅ Export to CSV
+- ✅ Search and filter logs
+- ✅ Responsive UI with shadcn/ui
 
-1. Połącz repozytorium z Vercel:
-   - Zaloguj się na [vercel.com](https://vercel.com)
-   - Kliknij "Add New Project"
-   - Importuj to repozytorium GitHub
-   - Vercel automatycznie wykryje framework Vite
-
-2. Konfiguracja domeny:
-   - W ustawieniach projektu Vercel, przejdź do "Domains"
-   - Dodaj domenę `skyroute.uk`
-   - Postępuj zgodnie z instrukcjami Vercel dla konfiguracji DNS
-
-### ⚠️ WAŻNE - Dokończenie migracji
-
-Aby aplikacja działała, musisz przenieść zawartość z `src/base44` do głównego katalogu:
-
-```bash
-# Sklonuj repozytorium lokalnie
-git clone https://github.com/Bunnycukino/skyroute.uk.git
-cd skyroute.uk
-
-# Skopiuj pliki źródłowe
-cp -r src/base44/src ./src
-cp -r src/base44/components.json ./
-cp -r src/base44/jsconfig.json ./
-cp -r src/base44/eslint.config.js ./
-
-# Usuń stary katalog
-rm -rf src/base44
-
-# Commit i push
-git add .
-git commit -m "Complete migration to root structure"
-git push origin main
-```
-
-## 📦 Lokalne uruchomienie
-
-```bash
-# Zainstaluj zależności
-npm install
-
-# Uruchom serwer deweloperski
-npm run dev
-
-# Build produkcyjny
-npm run build
-
-# Podgląd builda
-npm run preview
-```
-
-## 🛠️ Technologie
+## Tech Stack
 
 - React 18
 - Vite
+- React Router
+- React Hook Form + Zod
 - Tailwind CSS
-- Radix UI
-- Base44 SDK
-- React Router v7
+- shadcn/ui components
+- date-fns
+- sonner (toast notifications)
 
-## 📝 Struktura projektu
+## Development
 
-```
-skyroute.uk/
-├── src/
-│   ├── components/    # Komponenty UI
-│   ├── pages/        # Strony aplikacji
-│   ├── lib/          # Biblioteki pomocnicze
-│   ├── hooks/        # Custom React hooks
-│   ├── utils/        # Funkcje pomocnicze
-│   ├── api/          # API handlers
-│   ├── App.jsx       # Główny komponent
-│   ├── main.jsx      # Entry point
-│   └── index.css     # Style globalne
-├── public/           # Statyczne pliki
-├── index.html        # HTML template
-├── package.json      # Zależności
-├── vite.config.js    # Konfiguracja Vite
-└── tailwind.config.js # Konfiguracja Tailwind
+```bash
+npm install
+npm run dev
 ```
 
-## 🔧 Konfiguracja DNS dla skyroute.uk
+## Build
 
-W panelu zarządzania domeną dodaj następujące rekordy:
-
-```
-Type: A
-Name: @
-Value: 76.76.21.21
-
-Type: CNAME
-Name: www
-Value: cname.vercel-dns.com
+```bash
+npm run build
 ```
 
-## 📞 Wsparcie
+## Deployment
 
-W razie problemów, sprawdź logi na Vercel dashboard lub otwórz issue w tym repozytorium.
+Automatically deployed to Vercel on push to main branch.
+
+## System Overview
+
+### Workflow
+
+1. **RAMP INPUT**: Enter container code and pieces → System generates C209
+2. **LOGISTIC INPUT**: Enter C209, flight, and signature → System generates C208
+3. All entries are logged with full history in the LOG view
+
+### Special Cases
+
+- **NEW BUILD**: Enter "NEW BUILD" in LOGISTIC INPUT to create entry with C208 immediately
+- **RW Flights**: Flights starting with "RW" automatically set C208 to "RW"
+- **Expiry Tracking**: Unused C209 entries expire after 48 hours with warning
+
+## Data Storage
+
+All data is stored in browser localStorage. Automatic backups are created every 6 hours (maximum 10 backups retained).
