@@ -21,18 +21,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Get database connection string from environment variable
-    const databaseUrl = process.env.DATABASE_URL;
+    // Get database connection string - try multiple env vars
+    const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL;
     
     if (!databaseUrl) {
-      console.error('[API] DATABASE_URL not configured');
+      console.error('[API] No database URL found in env');
+      console.error('[API] Available env vars:', Object.keys(process.env).filter(k => k.includes('POSTGRES') || k.includes('DATABASE')));
       return res.status(500).json({ 
         success: false, 
-        error: 'Database not configured - DATABASE_URL missing' 
+        error: 'Database not configured - POSTGRES_URL or DATABASE_URL missing' 
       });
     }
 
-    console.log('[API] Fetching entries from Neon database...');
+    console.log('[API] Fetching entries from Neon/Vercel Postgres...');
     
     // Connect to Neon
     const sql = neon(databaseUrl);
