@@ -1,16 +1,23 @@
 import { neon } from '@neondatabase/serverless';
 
-export const config = {
-  runtime: 'edge',
-};
+export default async function handler(req, res) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
 
-export default async function handler(req) {
+  // Handle OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   // Only allow GET requests
   if (req.method !== 'GET') {
-    return new Response(
-      JSON.stringify({ success: false, error: 'Method not allowed' }),
-      { status: 405, headers: { 'Content-Type': 'application/json' } }
-    );
+    return res.status(405).json({ 
+      success: false, 
+      error: 'Method not allowed' 
+    });
   }
 
   try {
@@ -19,19 +26,16 @@ export default async function handler(req) {
     
     if (!databaseUrl) {
       console.error('[API] DATABASE_URL not configured');
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Database not configured' 
-        }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Database not configured - DATABASE_URL missing' 
+      });
     }
 
+    console.log('[API] Fetching entries from Neon database...');
+    
     // Connect to Neon
     const sql = neon(databaseUrl);
-    
-    console.log('[API] Fetching entries from Neon database...');
     
     // Query all entries, ordered by creation date (newest first)
     const entries = await sql`
@@ -66,29 +70,19 @@ export default async function handler(req) {
       createdAt: entry.created_at
     }));
     
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        entries: transformedEntries,
-        count: transformedEntries.length
-      }),
-      { 
-        status: 200, 
-        headers: { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store, max-age=0'
-        } 
-      }
-    );
+    return res.status(200).json({ 
+      success: true, 
+      entries: transformedEntries,
+      count: transformedEntries.length
+    });
     
   } catch (error) {
     console.error('[API] Error fetching entries:', error);
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message || 'Failed to fetch entries' 
-      }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    console.error('[API] Error details:', error.message, error.stack);
+    return res.status(500).json({ 
+      success: false, 
+      error: error.message || 'Failed to fetch entries',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 }
