@@ -15,7 +15,7 @@ export const getMonthPrefix = (date) => {
   return months[date.getMonth()];
 };
 
-// Get all log entries
+// Get all log entries (fallback to localStorage if needed)
 export const getLogEntries = () => {
   const data = localStorage.getItem(STORAGE_KEY);
   return data ? JSON.parse(data) : [];
@@ -356,38 +356,40 @@ export const checkAndCreateBackup = () => {
   return null;
 };
 
-// Export to CSV
-export const exportToCSV = () => {
-  const entries = getLogEntries();
+// Export to CSV - now accepts entries array as parameter
+export const exportToCSV = (entries = []) => {
+  // If no entries provided, try to get from localStorage as fallback
+  if (!entries || entries.length === 0) {
+    entries = getLogEntries();
+  }
+  
+  if (entries.length === 0) {
+    console.warn('No entries to export');
+    return;
+  }
   
   const headers = [
-    'C209 Number', 'Date', 'Time', 'Month-Year', 'Bar Number', 'Pieces', 
-    'Flight Number', 'Signature', 'C208 Number', 'Flight Date', 'Time', 
-    'Month-Year', 'Flight Number', 'Bar Number', 'Pieces', 'Signature'
+    'C209 Number', 'Container Code', 'Pieces', 'C208 Number', 
+    'Flight Number', 'Bar Number', 'Signature', 'Status', 'Created At'
   ];
   
   const rows = entries.map(entry => [
-    entry.c209Number,
-    entry.date,
-    entry.time,
-    entry.monthYear,
-    entry.barNumber,
-    entry.pieces,
-    entry.flight,
-    entry.signature,
-    entry.c208Number,
-    entry.newDate,
-    entry.newTime,
-    entry.newMonthYear,
-    entry.newFlight,
-    entry.newBarNumber,
-    entry.newPieces,
-    entry.newSignature
+    entry.c209Number || entry.c209_number || '',
+    entry.containerCode || entry.container_code || '',
+    entry.pieces || '',
+    entry.c208Number || entry.c208_number || '',
+    entry.flightNumber || entry.flight_number || entry.flight || '',
+    entry.barNumber || entry.bar_number || '',
+    entry.signature || '',
+    entry.status || '',
+    entry.createdAt || entry.created_at || ''
   ]);
   
-  const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+  const csv = [headers, ...rows].map(row => 
+    row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+  ).join('\n');
   
-  const blob = new Blob([csv], { type: 'text/csv' });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
