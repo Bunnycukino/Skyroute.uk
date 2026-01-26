@@ -1,5 +1,4 @@
 import { neon } from '@neondatabase/serverless';
-// Force rebuild - database connection ready
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -22,21 +21,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Get database connection string - try multiple env vars
-    const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+    // Use POSTGRES_URL exclusively
+    const databaseUrl = process.env.POSTGRES_URL;
     
     if (!databaseUrl) {
-      console.error('[API] No database URL found in env');
-      console.error('[API] Available env vars:', Object.keys(process.env).filter(k => k.includes('POSTGRES') || k.includes('DATABASE')));
+      console.error('[API] POSTGRES_URL not configured');
       return res.status(500).json({ 
         success: false, 
-        error: 'Database not configured - POSTGRES_URL or DATABASE_URL missing' 
+        error: 'Database not configured - POSTGRES_URL missing' 
       });
     }
 
-    console.log('[API] Fetching entries from Neon/Vercel Postgres...');
+    console.log('[API] Fetching entries using POSTGRES_URL...');
     
-    // Connect to Neon
+    // Connect to database
     const sql = neon(databaseUrl);
     
     // Query all entries, ordered by creation date (newest first)
