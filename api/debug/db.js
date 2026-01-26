@@ -5,12 +5,13 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
 
   try {
-    const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+    // Use POSTGRES_URL exclusively
+    const databaseUrl = process.env.POSTGRES_URL;
     
     if (!databaseUrl) {
       return res.status(500).json({ 
         success: false,
-        error: 'No database URL found',
+        error: 'POSTGRES_URL not configured',
         envVars: Object.keys(process.env).filter(k => k.includes('POSTGRES') || k.includes('DATABASE'))
       });
     }
@@ -28,10 +29,25 @@ export default async function handler(req, res) {
     // Try to count entries in 'entries' table if it exists
     let entriesCount = null;
     let entriesError = null;
+    let sampleEntries = [];
     
     try {
       const count = await sql`SELECT COUNT(*) as count FROM entries`;
       entriesCount = count[0].count;
+      
+      // Get 3 sample entries
+      const samples = await sql`
+        SELECT 
+          id, 
+          c209_number, 
+          c208_number, 
+          status, 
+          created_at 
+        FROM entries 
+        ORDER BY created_at DESC 
+        LIMIT 3
+      `;
+      sampleEntries = samples;
     } catch (err) {
       entriesError = err.message;
     }
@@ -40,13 +56,14 @@ export default async function handler(req, res) {
       success: true,
       database: {
         connected: true,
-        urlSource: process.env.POSTGRES_URL ? 'POSTGRES_URL' : 'DATABASE_URL',
+        urlSource: 'POSTGRES_URL',
         urlPreview: databaseUrl.substring(0, 30) + '...' + databaseUrl.substring(databaseUrl.length - 20)
       },
       tables: tables.map(t => t.table_name),
       entriesTable: {
         exists: entriesError === null,
         count: entriesCount,
+        sampleEntries: sampleEntries,
         error: entriesError
       }
     });
