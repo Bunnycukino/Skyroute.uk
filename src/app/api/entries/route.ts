@@ -139,3 +139,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  const user = getUser(req);
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+    const { error } = await supabase.from('entries').delete().eq('id', parseInt(id));
+    if (error) throw error;
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    console.error('DELETE /api/entries error:', err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
