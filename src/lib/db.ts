@@ -5,13 +5,23 @@ function createSql() {
   if (!dbUrl) {
     return postgres('postgres://localhost/placeholder', { prepare: false });
   }
-  // Parse connection string manually to handle Supabase's user.projectref format
-  const url = new URL(dbUrl);
-  const username = decodeURIComponent(url.username);
-  const password = decodeURIComponent(url.password);
-  const host = url.hostname;
-  const port = parseInt(url.port) || 5432;
-  const database = url.pathname.slice(1);
+
+  // Use regex to parse connection string
+  // Handles Supabase format: postgresql://user.projectref:password@host:port/db
+  const match = dbUrl.match(
+    /^(?:postgres(?:ql)?:\/\/)([^:]+):([^@]+)@([^:/]+)(?::(\d+))?(?:\/(.*))?$/
+  );
+
+  if (!match) {
+    // Fallback: pass URL directly
+    return postgres(dbUrl, { prepare: false, ssl: { rejectUnauthorized: false } });
+  }
+
+  const username = decodeURIComponent(match[1]);
+  const password = decodeURIComponent(match[2]);
+  const host = match[3];
+  const port = parseInt(match[4] || '5432');
+  const database = match[5] || 'postgres';
 
   return postgres({
     host,
