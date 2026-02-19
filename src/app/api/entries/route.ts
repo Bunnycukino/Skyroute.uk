@@ -21,6 +21,7 @@ async function getNextSequence(type: 'c209' | 'c208', date: Date) {
     .like(col, prefix + '%')
     .order(col, { ascending: false })
     .limit(1);
+
   if (error || !data || data.length === 0) return 1;
   const lastVal = (data[0] as any)[col] as string;
   const numPart = parseInt(lastVal.substring(3));
@@ -30,6 +31,7 @@ async function getNextSequence(type: 'c209' | 'c208', date: Date) {
 export async function GET(req: NextRequest) {
   const user = getUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '50');
@@ -49,18 +51,26 @@ export async function GET(req: NextRequest) {
     if (entriesError) throw entriesError;
 
     const { count: totalCount } = await supabase.from('entries').select('*', { count: 'exact', head: true });
-
+    
     const today = new Date().toISOString().split('T')[0];
-    const { count: todayCount } = await supabase.from('entries').select('*', { count: 'exact', head: true }).gte('created_at', today + 'T00:00:00').lte('created_at', today + 'T23:59:59');
+    const { count: todayCount } = await supabase.from('entries').select('*', { count: 'exact', head: true })
+      .gte('created_at', today + 'T00:00:00')
+      .lte('created_at', today + 'T23:59:59');
 
     const expiryStart = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
-    const expiryEnd = new Date(Date.now() - 44 * 60 * 60 * 1000).toISOString();
+    const expiryEnd = new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString();
+    
     const { count: expiryCount } = await supabase.from('entries').select('*', { count: 'exact', head: true })
       .eq('type', 'logistic_input')
       .gte('created_at', expiryStart)
       .lte('created_at', expiryEnd);
 
-    const { data: flightsData } = await supabase.from('entries').select('flight_number').gte('created_at', today + 'T00:00:00').lte('created_at', today + 'T23:59:59').not('flight_number', 'is', null).neq('flight_number', '');
+    const { data: flightsData } = await supabase.from('entries').select('flight_number')
+      .gte('created_at', today + 'T00:00:00')
+      .lte('created_at', today + 'T23:59:59')
+      .not('flight_number', 'is', null)
+      .neq('flight_number', '');
+    
     const uniqueFlights = new Set((flightsData || []).map((r: any) => r.flight_number)).size;
 
     const stats = {
@@ -80,6 +90,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const user = getUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await req.json();
     const { action } = body;
@@ -89,6 +100,7 @@ export async function POST(req: NextRequest) {
     if (action === 'ramp_input') {
       const seq = await getNextSequence('c209', now);
       const c209 = `${getMonthPrefix(now)}${String(seq).padStart(4, '0')}`;
+
       const { data: result, error } = await supabase.from('entries').insert({
         type: 'ramp_input',
         c209_number: c209,
@@ -103,14 +115,17 @@ export async function POST(req: NextRequest) {
         month_year: monthYear,
         created_by: user,
       }).select().single();
+
       if (error) throw error;
       return NextResponse.json({ success: true, c209, entry: result });
 
     } else if (action === 'logistic_input') {
       const c209seq = await getNextSequence('c209', now);
       const c208seq = await getNextSequence('c208', now);
+      
       const c209 = `${getMonthPrefix(now)}${String(c209seq).padStart(4, '0')}`;
       const c208 = `${getMonthPrefix(now)}${String(c208seq).padStart(4, '0')}`;
+
       const { data: result, error } = await supabase.from('entries').insert({
         type: 'logistic_input',
         c209_number: c209,
@@ -128,6 +143,7 @@ export async function POST(req: NextRequest) {
         month_year: monthYear,
         created_by: user,
       }).select().single();
+
       if (error) throw error;
       return NextResponse.json({ success: true, c209, c208, entry: result });
 
@@ -143,12 +159,15 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const user = getUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+
     const { error } = await supabase.from('entries').delete().eq('id', parseInt(id));
     if (error) throw error;
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error('DELETE /api/entries error:', err);
