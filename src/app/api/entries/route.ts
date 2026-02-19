@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import sql from '@/lib/db';
+import supabase from '@/lib/db';
 
 function getUser(req: NextRequest): string | null {
   const cookie = req.cookies.get('skyroute_user');
@@ -14,14 +14,15 @@ function getMonthPrefix(date: Date) {
 
 async function getNextSequence(type: 'c209' | 'c208', date: Date) {
   const prefix = getMonthPrefix(date);
-  const pattern = prefix + '%';
   const col = type === 'c209' ? 'c209_number' : 'c208_number';
-  const result = await sql.unsafe(
-    `SELECT ${col} as val FROM entries WHERE ${col} LIKE $1 ORDER BY ${col} DESC LIMIT 1`,
-    [pattern]
-  );
-  if (result.length === 0) return 1;
-  const lastVal = result[0].val as string;
+  const { data, error } = await supabase
+    .from('entries')
+    .select(col)
+    .like(col, prefix + '%')
+    .order(col, { ascending: false })
+    .limit(1);
+  if (error || !data || data.length === 0) return 1;
+  const lastVal = (data[0] as any)[col] as string;
   const numPart = parseInt(lastVal.substring(3));
   return isNaN(numPart) ? 1 : numPart + 1;
 }
@@ -29,46 +30,44 @@ async function getNextSequence(type: 'c209' | 'c208', date: Date) {
 export async function GET(req: NextRequest) {
   const user = getUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   try {
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '50');
     const type = searchParams.get('type');
     const search = searchParams.get('search') || '';
 
-    let entries;
-    if (type && search) {
-      entries = await sql.unsafe(
-        `SELECT * FROM entries WHERE type = $1 AND (c209_number ILIKE $2 OR c208_number ILIKE $2 OR flight_number ILIKE $2 OR container_code ILIKE $2 OR bar_number ILIKE $2) ORDER BY created_at DESC LIMIT $3`,
-        [type, '%' + search + '%', limit]
-      );
-    } else if (type) {
-      entries = await sql.unsafe(
-        `SELECT * FROM entries WHERE type = $1 ORDER BY created_at DESC LIMIT $2`,
-        [type, limit]
-      );
-    } else if (search) {
-      entries = await sql.unsafe(
-        `SELECT * FROM entries WHERE c209_number ILIKE $1 OR c208_number ILIKE $1 OR flight_number ILIKE $1 OR container_code ILIKE $1 OR bar_number ILIKE $1 ORDER BY created_at DESC LIMIT $2`,
-        ['%' + search + '%', limit]
-      );
-    } else {
-      entries = await sql.unsafe(
-        `SELECT * FROM entries ORDER BY created_at DESC LIMIT $1`,
-        [limit]
+    let query = supabase.from('entries').select('*').order('created_at', { ascending: false }).limit(limit);
+
+    if (type) query = query.eq('type', type);
+    if (search) {
+      query = query.or(
+        `c209_number.ilike.%${search}%,c208_number.ilike.%${search}%,flight_number.ilike.%${search}%,container_code.ilike.%${search}%,bar_number.ilike.%${search}%`
       );
     }
 
-    const totalResult = await sql`SELECT COUNT(*) as count FROM entries`;
-    const todayResult = await sql`SELECT COUNT(*) as count FROM entries WHERE created_at::date = CURRENT_DATE`;
-    const expiryResult = await sql`SELECT COUNT(*) as count FROM entries WHERE type = 'logistic_input' AND created_at > NOW() - INTERVAL '48 hours' AND created_at < NOW() - INTERVAL '44 hours'`;
-    const flightsResult = await sql`SELECT COUNT(DISTINCT flight_number) as count FROM entries WHERE created_at::date = CURRENT_DATE AND flight_number IS NOT NULL AND flight_number != ''`;
+    const { data: entries, error: entriesError } = await query;
+    if (entriesError) throw entriesError;
+
+    const { count: totalCount } = await supabase.from('entries').select('*', { count: 'exact', head: true });
+
+    const today = new Date().toISOString().split('T')[0];
+    const { count: todayCount } = await supabase.from('entries').select('*', { count: 'exact', head: true }).gte('created_at', today + 'T00:00:00').lte('created_at', today + 'T23:59:59');
+
+    const expiryStart = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+    const expiryEnd = new Date(Date.now() - 44 * 60 * 60 * 1000).toISOString();
+    const { count: expiryCount } = await supabase.from('entries').select('*', { count: 'exact', head: true })
+      .eq('type', 'logistic_input')
+      .gte('created_at', expiryStart)
+      .lte('created_at', expiryEnd);
+
+    const { data: flightsData } = await supabase.from('entries').select('flight_number').gte('created_at', today + 'T00:00:00').lte('created_at', today + 'T23:59:59').not('flight_number', 'is', null).neq('flight_number', '');
+    const uniqueFlights = new Set((flightsData || []).map((r: any) => r.flight_number)).size;
 
     const stats = {
-      totalEntries: parseInt(totalResult[0].count),
-      todayEntries: parseInt(todayResult[0].count),
-      expiringSoon: parseInt(expiryResult[0].count),
-      totalFlights: parseInt(flightsResult[0].count)
+      totalEntries: totalCount || 0,
+      todayEntries: todayCount || 0,
+      expiringSoon: expiryCount || 0,
+      totalFlights: uniqueFlights,
     };
 
     return NextResponse.json({ entries, stats });
@@ -81,7 +80,6 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const user = getUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   try {
     const body = await req.json();
     const { action } = body;
@@ -91,41 +89,47 @@ export async function POST(req: NextRequest) {
     if (action === 'ramp_input') {
       const seq = await getNextSequence('c209', now);
       const c209 = `${getMonthPrefix(now)}${String(seq).padStart(4, '0')}`;
-
-      const result = await sql`
-        INSERT INTO entries (
-          type, c209_number, bar_number, container_code, flight_number,
-          origin, destination, pieces, signature, notes, month_year, created_by
-        ) VALUES (
-          'ramp_input', ${c209}, ${body.container_code || null}, ${body.container_code || null},
-          ${body.flight_number || null}, ${body.origin || null}, ${body.destination || null},
-          ${body.pieces || null}, ${body.signature || null}, ${body.notes || null},
-          ${monthYear}, ${user}
-        ) RETURNING *
-      `;
-
-      return NextResponse.json({ success: true, c209, entry: result[0] });
+      const { data: result, error } = await supabase.from('entries').insert({
+        type: 'ramp_input',
+        c209_number: c209,
+        bar_number: body.container_code || null,
+        container_code: body.container_code || null,
+        flight_number: body.flight_number || null,
+        origin: body.origin || null,
+        destination: body.destination || null,
+        pieces: body.pieces || null,
+        signature: body.signature || null,
+        notes: body.notes || null,
+        month_year: monthYear,
+        created_by: user,
+      }).select().single();
+      if (error) throw error;
+      return NextResponse.json({ success: true, c209, entry: result });
 
     } else if (action === 'logistic_input') {
       const c209seq = await getNextSequence('c209', now);
       const c208seq = await getNextSequence('c208', now);
       const c209 = `${getMonthPrefix(now)}${String(c209seq).padStart(4, '0')}`;
       const c208 = `${getMonthPrefix(now)}${String(c208seq).padStart(4, '0')}`;
-
-      const result = await sql`
-        INSERT INTO entries (
-          type, c209_number, c208_number, bar_number, container_code, flight_number,
-          origin, destination, pieces, is_new_build, is_rw,
-          signature, notes, month_year, created_by
-        ) VALUES (
-          'logistic_input', ${c209}, ${c208}, ${body.container_code || null}, ${body.container_code || null},
-          ${body.flight_number || null}, ${body.origin || null}, ${body.destination || null},
-          ${body.pieces || null}, ${body.is_new_build || false}, ${body.is_rw || false},
-          ${body.signature || null}, ${body.notes || null}, ${monthYear}, ${user}
-        ) RETURNING *
-      `;
-
-      return NextResponse.json({ success: true, c209, c208, entry: result[0] });
+      const { data: result, error } = await supabase.from('entries').insert({
+        type: 'logistic_input',
+        c209_number: c209,
+        c208_number: c208,
+        bar_number: body.container_code || null,
+        container_code: body.container_code || null,
+        flight_number: body.flight_number || null,
+        origin: body.origin || null,
+        destination: body.destination || null,
+        pieces: body.pieces || null,
+        is_new_build: body.is_new_build || false,
+        is_rw: body.is_rw || false,
+        signature: body.signature || null,
+        notes: body.notes || null,
+        month_year: monthYear,
+        created_by: user,
+      }).select().single();
+      if (error) throw error;
+      return NextResponse.json({ success: true, c209, c208, entry: result });
 
     } else {
       return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
