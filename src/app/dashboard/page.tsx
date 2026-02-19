@@ -37,6 +37,7 @@ export default function DashboardPage() {
     const now = new Date();
     const hoursElapsed = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
     const hoursLeft = 48 - hoursElapsed;
+    
     if (hoursLeft < 0) return { label: 'WYGASL', color: 'bg-red-500/20 text-red-300' };
     if (hoursLeft < 12) return { label: `${Math.floor(hoursLeft)}h`, color: 'bg-orange-500/20 text-orange-300' };
     return { label: `${Math.floor(hoursLeft)}h`, color: 'bg-green-500/20 text-green-300' };
@@ -68,7 +69,7 @@ export default function DashboardPage() {
             <span>📋</span> All Entries
           </Link>
           <div className="pt-4 mt-4 border-t border-border">
-             <button onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-destructive/10 text-sm text-muted-foreground hover:text-destructive transition-colors w-full text-left">
+            <button onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-destructive/10 text-sm text-muted-foreground hover:text-destructive transition-colors w-full text-left">
               <span>🚪</span> Wyloguj
             </button>
           </div>
@@ -111,18 +112,18 @@ export default function DashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead>
-                <tr className="bg-muted/50 border-b border-border">
-                  <th className="px-4 py-3 font-semibold text-muted-foreground">C209</th>
-                  <th className="px-4 py-3 font-semibold text-muted-foreground">Flight Date</th>
-                  <th className="px-4 py-3 font-semibold text-muted-foreground">Month</th>
-                  <th className="px-4 py-3 font-semibold text-muted-foreground">Bar Number</th>
-                  <th className="px-4 py-3 font-semibold text-muted-foreground">Pieces</th>
-                  <th className="px-4 py-3 font-semibold text-muted-foreground">Flight</th>
-                  <th className="px-4 py-3 font-semibold text-muted-foreground">C208</th>
-                  <th className="px-4 py-3 font-semibold text-muted-foreground">Flags</th>
-                  <th className="px-4 py-3 font-semibold text-muted-foreground">Podpis</th>
-                  <th className="px-4 py-3 font-semibold text-muted-foreground">Ważność</th>
-                  <th className="px-4 py-3 font-semibold text-muted-foreground">Data</th>
+                <tr className="bg-muted/50 border-b border-border text-muted-foreground uppercase text-[10px] tracking-wider">
+                  <th className="px-4 py-3 font-semibold">C209</th>
+                  <th className="px-4 py-3 font-semibold">Flight Date</th>
+                  <th className="px-4 py-3 font-semibold">Month</th>
+                  <th className="px-4 py-3 font-semibold">Bar Number</th>
+                  <th className="px-4 py-3 font-semibold">Pieces</th>
+                  <th className="px-4 py-3 font-semibold">Flight</th>
+                  <th className="px-4 py-3 font-semibold">C208</th>
+                  <th className="px-4 py-3 font-semibold">Flags</th>
+                  <th className="px-4 py-3 font-semibold">Podpis</th>
+                  <th className="px-4 py-3 font-semibold">Ważność</th>
+                  <th className="px-4 py-3 font-semibold">Data</th>
                 </tr>
               </thead>
               <tbody>
@@ -134,34 +135,35 @@ export default function DashboardPage() {
                   recentEntries.map((entry: any) => {
                     const expiry = getExpiryStatus(entry.created_at, entry.type);
                     const date = new Date(entry.created_at);
-                    const monthPrefix = date.toLocaleString('en-US', { month: 'short' }).toUpperCase() + '-' + date.getFullYear().toString().slice(-2);
+                    const monthPrefix = date.toLocaleString(\'en-US\', { month: \'short\' }).toUpperCase() + \'-\' + date.getFullYear().toString().slice(-2);
                     
                     return (
                       <tr key={entry.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                        <td className="px-4 py-3 font-mono font-bold text-primary">{entry.c209_number || '-'}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{date.toLocaleDateString('pl-PL')}</td>
-                        <td className="px-4 py-3 text-xs uppercase font-medium text-muted-foreground">{monthPrefix}</td>
-                        <td className="px-4 py-3 font-mono">{entry.bar_number || entry.container_code || '-'}</td>
-                        <td className="px-4 py-3 font-medium">{entry.pieces ?? '-'}</td>
-                        <td className="px-4 py-3 font-bold">{entry.flight_number || '-'}</td>
-                        <td className="px-4 py-3 font-mono text-muted-foreground">{entry.c208_number || '-'}</td>
+                        <td className="px-4 py-3 font-mono font-bold text-primary">{entry.c209_number || \'-\'}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{date.toLocaleDateString(\'pl-PL\')}</td>
+                        <td className="px-4 py-3 text-[10px] font-bold text-muted-foreground">{monthPrefix}</td>
+                        <td className="px-4 py-3 font-mono">{entry.bar_number || entry.container_code || \'-\'}</td>
+                        <td className="px-4 py-3 font-medium">{entry.pieces ?? \'-\'}</td>
+                        <td className="px-4 py-3 font-bold">{entry.flight_number || \'-\'}</td>
+                        <td className="px-4 py-3 font-mono text-muted-foreground">{entry.c208_number || \'-\'}</td>
                         <td className="px-4 py-3">
                           <div className="flex gap-1">
-                            {entry.is_new_build && <span className="bg-blue-500/20 text-blue-300 text-[10px] px-1.5 py-0.5 rounded border border-blue-500/30 font-bold">NEW</span>}
-                            {entry.is_rw_flight && <span className="bg-purple-500/20 text-purple-300 text-[10px] px-1.5 py-0.5 rounded border border-purple-500/30 font-bold">RW</span>}
-                            {entry.type === 'ramp_input' && <span className="bg-gray-500/20 text-gray-400 text-[10px] px-1.5 py-0.5 rounded border border-gray-500/30 font-bold uppercase">Ramp</span>}
+                            {entry.type === \'ramp_input\' && <span className="bg-gray-500/20 text-gray-400 text-[9px] px-1.5 py-0.5 rounded border border-gray-500/30 font-bold uppercase">RAMP</span>}
+                            {entry.type === \'logistic_input\' && <span className="bg-teal-500/20 text-teal-400 text-[9px] px-1.5 py-0.5 rounded border border-teal-500/30 font-bold uppercase">LOG</span>}
+                            {entry.is_new_build && <span className="bg-blue-500/20 text-blue-300 text-[9px] px-1.5 py-0.5 rounded border border-blue-500/30 font-bold uppercase">NEW</span>}
+                            {entry.is_rw_flight && <span className="bg-purple-500/20 text-purple-300 text-[9px] px-1.5 py-0.5 rounded border border-purple-500/30 font-bold uppercase">RW</span>}
                           </div>
                         </td>
-                        <td className="px-4 py-3 font-medium uppercase">{entry.signature || '-'}</td>
+                        <td className="px-4 py-3 font-medium uppercase">{entry.signature || \'-\'}</td>
                         <td className="px-4 py-3">
                           {expiry ? (
                             <span className={`px-2 py-0.5 rounded-[4px] text-[11px] font-bold ${expiry.color}`}>
                               {expiry.label}
                             </span>
-                          ) : '-'}
+                          ) : \'-\'}
                         </td>
                         <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                          {date.toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                          {date.toLocaleString(\'pl-PL\', { day: \'2-digit\', month: \'2-digit\', hour: \'2-digit\', minute: \'2-digit\' })}
                         </td>
                       </tr>
                     );
