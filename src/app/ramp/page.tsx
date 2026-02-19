@@ -71,6 +71,7 @@ export default function RampInputPage() {
           <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors text-muted-foreground">Dashboard</Link>
           <Link href="/ramp" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 text-primary font-medium">Ramp Input (C209)</Link>
           <Link href="/logistic" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors text-muted-foreground">Logistic Input (C208)</Link>
+          <Link href="/entries" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors text-muted-foreground">All Entries</Link>
         </nav>
       </aside>
 
