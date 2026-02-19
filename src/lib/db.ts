@@ -1,16 +1,14 @@
-import postgres from 'postgres';
+import { createClient } from '@supabase/supabase-js';
 
-const sql = postgres({
-  host: process.env.DB_HOST || 'aws-1-eu-west-1.pooler.supabase.com',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'postgres',
-  username: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || '',
-  ssl: { rejectUnauthorized: false },
-  max: 1,
-  idle_timeout: 20,
-  connect_timeout: 10,
-  prepare: false,
+const supabaseUrl = process.env.SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+// Admin client with service role key - bypasses RLS, server-side only
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
 });
 
-export default sql;
+export default supabase;
