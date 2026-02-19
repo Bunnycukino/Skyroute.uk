@@ -37,124 +37,136 @@ export default function DashboardPage() {
     const now = new Date();
     const hoursElapsed = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
     const hoursLeft = 48 - hoursElapsed;
-    if (hoursLeft < 0) return { label: 'WYGASL', color: 'bg-red-100 text-red-800' };
-    if (hoursLeft < 4) return { label: `${Math.floor(hoursLeft)}h`, color: 'bg-red-100 text-red-700' };
-    if (hoursLeft < 12) return { label: `${Math.floor(hoursLeft)}h`, color: 'bg-orange-100 text-orange-700' };
-    return { label: `${Math.floor(hoursLeft)}h`, color: 'bg-green-100 text-green-700' };
+    if (hoursLeft < 0) return { label: 'WYGASL', color: 'bg-red-500/20 text-red-300' };
+    if (hoursLeft < 12) return { label: `${Math.floor(hoursLeft)}h`, color: 'bg-orange-500/20 text-orange-300' };
+    return { label: `${Math.floor(hoursLeft)}h`, color: 'bg-green-500/20 text-green-300' };
   }
 
   return (
     <div className="min-h-screen bg-background flex">
       <aside className="w-64 bg-card border-r border-border flex flex-col">
         <div className="p-6 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </div>
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold">SR</div>
             <div>
               <h1 className="font-bold text-foreground text-sm">SkyRoute OK</h1>
-              <p className="text-xs text-muted-foreground">C209 System</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">C209 System</p>
             </div>
-          </div>
+          </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">
-          <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium">
+          <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium text-sm">
             <span>📊</span> Dashboard
           </Link>
-          <Link href="/ramp" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm text-muted-foreground hover:text-foreground">
+          <Link href="/ramp" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground">
             <span>✈️</span> Ramp Input (C209)
           </Link>
-          <Link href="/logistic" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm text-muted-foreground hover:text-foreground">
+          <Link href="/logistic" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground">
             <span>📦</span> Logistic Input (LOG)
           </Link>
-          <Link href="/entries" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm text-muted-foreground hover:text-foreground">
+          <Link href="/entries" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground">
             <span>📋</span> All Entries
           </Link>
+          <div className="pt-4 mt-4 border-t border-border">
+             <button onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-destructive/10 text-sm text-muted-foreground hover:text-destructive transition-colors w-full text-left">
+              <span>🚪</span> Wyloguj
+            </button>
+          </div>
         </nav>
-        <div className="p-4 border-t border-border">
-          <button onClick={handleSignOut} className="w-full text-left px-3 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent">
-            Wyloguj
-          </button>
-        </div>
       </aside>
-      <main className="flex-1 p-8 overflow-auto">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold">Dashboard</h2>
-          <p className="text-muted-foreground text-sm mt-1">System C209 - Ramp & Logistic</p>
+
+      <main className="flex-1 p-8 overflow-y-auto">
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">System C209 - Ramp & Logistic Operations</p>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {[
+            { label: 'Wszystkie wpisy', value: stats.totalEntries, icon: '📋' },
+            { label: 'Dzisiaj', value: stats.todayEntries, icon: '📅' },
+            { label: 'Wygasają wkrótce', value: stats.expiringSoon, color: 'text-orange-500', icon: '⏳' },
+            { label: 'Loty dzisiaj', value: stats.totalFlights, icon: '✈️' }
+          ].map((stat, i) => (
+            <div key={i} className="bg-card border border-border p-6 rounded-2xl shadow-sm">
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-muted-foreground text-sm font-medium">{stat.label}</span>
+                <span className="text-lg">{stat.icon}</span>
+              </div>
+              <div className={`text-2xl font-bold ${stat.color || ''}`}>
+                {loading ? '...' : stat.value ?? 0}
+              </div>
+            </div>
+          ))}
         </div>
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="bg-card border border-border rounded-xl p-4">
-            <p className="text-xs text-muted-foreground">Wszystkie wpisy</p>
-            <p className="text-2xl font-bold mt-1">{loading ? '...' : stats.totalEntries ?? 0}</p>
-          </div>
-          <div className="bg-card border border-border rounded-xl p-4">
-            <p className="text-xs text-muted-foreground">Dzisiaj</p>
-            <p className="text-2xl font-bold mt-1">{loading ? '...' : stats.todayEntries ?? 0}</p>
-          </div>
-          <div className="bg-card border border-border rounded-xl p-4">
-            <p className="text-xs text-muted-foreground">Wygasaja wkrotce</p>
-            <p className="text-2xl font-bold mt-1 text-orange-600">{loading ? '...' : stats.expiringSoon ?? 0}</p>
-          </div>
-          <div className="bg-card border border-border rounded-xl p-4">
-            <p className="text-xs text-muted-foreground">Loty dzisiaj</p>
-            <p className="text-2xl font-bold mt-1">{loading ? '...' : stats.totalFlights ?? 0}</p>
-          </div>
-        </div>
-        <div className="bg-card border border-border rounded-xl">
-          <div className="p-4 border-b border-border flex items-center justify-between">
-            <h3 className="font-semibold">Ostatnie wpisy</h3>
+
+        <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-border flex justify-between items-center bg-muted/30">
+            <h3 className="font-bold text-lg">Ostatnie wpisy</h3>
             <div className="flex gap-2">
-              <Link href="/ramp" className="text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-lg">+ Ramp (C209)</Link>
-              <Link href="/logistic" className="text-xs bg-secondary text-secondary-foreground px-3 py-1.5 rounded-lg">+ Logistic (LOG)</Link>
+              <Link href="/ramp" className="text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-lg font-bold hover:opacity-90">+ Ramp</Link>
+              <Link href="/logistic" className="text-xs bg-teal-600 text-white px-3 py-1.5 rounded-lg font-bold hover:opacity-90">+ Logistic</Link>
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm text-left">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left p-3 text-muted-foreground font-medium">C209</th>
-                  <th className="text-left p-3 text-muted-foreground font-medium">C208</th>
-                  <th className="text-left p-3 text-muted-foreground font-medium">Bar Number</th>
-                  <th className="text-left p-3 text-muted-foreground font-medium">Lot</th>
-                  <th className="text-left p-3 text-muted-foreground font-medium">Trasa</th>
-                  <th className="text-left p-3 text-muted-foreground font-medium">Flagi</th>
-                  <th className="text-left p-3 text-muted-foreground font-medium">Podpis</th>
-                  <th className="text-left p-3 text-muted-foreground font-medium">Waznosc</th>
-                  <th className="text-left p-3 text-muted-foreground font-medium">Data</th>
+                <tr className="bg-muted/50 border-b border-border">
+                  <th className="px-4 py-3 font-semibold text-muted-foreground">C209</th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground">Flight Date</th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground">Month</th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground">Bar Number</th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground">Pieces</th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground">Flight</th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground">C208</th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground">Flags</th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground">Podpis</th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground">Ważność</th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground">Data</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">Ladowanie...</td></tr>
+                  <tr><td colSpan={11} className="px-4 py-12 text-center text-muted-foreground">Ładowanie danych...</td></tr>
                 ) : recentEntries.length === 0 ? (
-                  <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">Brak wpisow. Dodaj pierwszy wpis!</td></tr>
-                ) : recentEntries.map((entry: any) => {
-                  const expiry = getExpiryStatus(entry.created_at, entry.type);
-                  return (
-                    <tr key={entry.id} className="border-b border-border hover:bg-accent/50">
-                      <td className="p-3 font-mono font-bold text-primary">{entry.c209_number || '-'}</td>
-                      <td className="p-3 font-mono">{entry.c208_number || '-'}</td>
-                      <td className="p-3 font-mono text-xs">{entry.bar_number || entry.container_code || '-'}</td>
-                      <td className="p-3">{entry.flight_number || '-'}</td>
-                      <td className="p-3 text-xs">{entry.origin && entry.destination ? `${entry.origin}\u2192${entry.destination}` : '-'}</td>
-                      <td className="p-3">
-                        <div className="flex gap-1">
-                          {entry.is_new_build && <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded">NEW</span>}
-                          {entry.is_rw_flight && <span className="text-xs bg-purple-100 text-purple-800 px-1 rounded">RW</span>}
-                          {entry.type === 'ramp_input' && <span className="text-xs bg-gray-100 text-gray-700 px-1 rounded">RAMP</span>}
-                          {entry.type === 'logistic_input' && !entry.is_new_build && !entry.is_rw_flight && <span className="text-xs bg-teal-100 text-teal-700 px-1 rounded">LOG</span>}
-                        </div>
-                      </td>
-                      <td className="p-3 text-xs">{entry.signature || '-'}</td>
-                      <td className="p-3">
-                        {expiry ? <span className={`text-xs px-2 py-0.5 rounded font-medium ${expiry.color}`}>{expiry.label}</span> : <span className="text-xs text-muted-foreground">-</span>}
-                      </td>
-                      <td className="p-3 text-xs text-muted-foreground">{entry.created_at ? new Date(entry.created_at).toLocaleString('pl-PL', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-'}</td>
-                    </tr>
-                  );
-                })}
+                  <tr><td colSpan={11} className="px-4 py-12 text-center text-muted-foreground">Brak wpisów w systemie.</td></tr>
+                ) : (
+                  recentEntries.map((entry: any) => {
+                    const expiry = getExpiryStatus(entry.created_at, entry.type);
+                    const date = new Date(entry.created_at);
+                    const monthPrefix = date.toLocaleString('en-US', { month: 'short' }).toUpperCase() + '-' + date.getFullYear().toString().slice(-2);
+                    
+                    return (
+                      <tr key={entry.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
+                        <td className="px-4 py-3 font-mono font-bold text-primary">{entry.c209_number || '-'}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{date.toLocaleDateString('pl-PL')}</td>
+                        <td className="px-4 py-3 text-xs uppercase font-medium text-muted-foreground">{monthPrefix}</td>
+                        <td className="px-4 py-3 font-mono">{entry.bar_number || entry.container_code || '-'}</td>
+                        <td className="px-4 py-3 font-medium">{entry.pieces ?? '-'}</td>
+                        <td className="px-4 py-3 font-bold">{entry.flight_number || '-'}</td>
+                        <td className="px-4 py-3 font-mono text-muted-foreground">{entry.c208_number || '-'}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-1">
+                            {entry.is_new_build && <span className="bg-blue-500/20 text-blue-300 text-[10px] px-1.5 py-0.5 rounded border border-blue-500/30 font-bold">NEW</span>}
+                            {entry.is_rw_flight && <span className="bg-purple-500/20 text-purple-300 text-[10px] px-1.5 py-0.5 rounded border border-purple-500/30 font-bold">RW</span>}
+                            {entry.type === 'ramp_input' && <span className="bg-gray-500/20 text-gray-400 text-[10px] px-1.5 py-0.5 rounded border border-gray-500/30 font-bold uppercase">Ramp</span>}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 font-medium uppercase">{entry.signature || '-'}</td>
+                        <td className="px-4 py-3">
+                          {expiry ? (
+                            <span className={`px-2 py-0.5 rounded-[4px] text-[11px] font-bold ${expiry.color}`}>
+                              {expiry.label}
+                            </span>
+                          ) : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                          {date.toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
