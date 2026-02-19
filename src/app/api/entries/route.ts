@@ -57,32 +57,14 @@ export async function GET(req: NextRequest) {
       .gte('created_at', today + 'T00:00:00')
       .lte('created_at', today + 'T23:59:59');
 
-    const expiryStart = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
-    const expiryEnd = new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString();
-    
-    const { count: expiryCount } = await supabase.from('entries').select('*', { count: 'exact', head: true })
-      .eq('type', 'logistic_input')
-      .gte('created_at', expiryStart)
-      .lte('created_at', expiryEnd);
-
-    const { data: flightsData } = await supabase.from('entries').select('flight_number')
-      .gte('created_at', today + 'T00:00:00')
-      .lte('created_at', today + 'T23:59:59')
-      .not('flight_number', 'is', null)
-      .neq('flight_number', '');
-    
-    const uniqueFlights = new Set((flightsData || []).map((r: any) => r.flight_number)).size;
-
     const stats = {
       totalEntries: totalCount || 0,
       todayEntries: todayCount || 0,
-      expiringSoon: expiryCount || 0,
-      totalFlights: uniqueFlights,
+      totalFlights: 0,
     };
 
     return NextResponse.json({ entries, stats });
   } catch (err: any) {
-    console.error('GET /api/entries error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
@@ -95,7 +77,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { action } = body;
     const now = new Date();
-    const monthYear = getMonthPrefix(now) + now.getFullYear().toString().slice(2);
+    const monthYear = getMonthPrefix(now) + '-' + now.getFullYear().toString().slice(2);
 
     if (action === 'ramp_input') {
       const seq = await getNextSequence('c209', now);
@@ -120,11 +102,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, c209, entry: result });
 
     } else if (action === 'logistic_input') {
-      const c209seq = await getNextSequence('c209', now);
       const c208seq = await getNextSequence('c208', now);
-      
-      const c209 = `${getMonthPrefix(now)}${String(c209seq).padStart(4, '0')}`;
       const c208 = `${getMonthPrefix(now)}${String(c208seq).padStart(4, '0')}`;
+      
+      let c209 = null;
+      if (body.is_new_build) {
+        c209 = 'NEW BUILD';
+      } else {
+        const c209seq = await getNextSequence('c209', now);
+        c209 = `${getMonthPrefix(now)}${String(c209seq).padStart(4, '0')}`;
+      }
 
       const { data: result, error } = await supabase.from('entries').insert({
         type: 'logistic_input',
@@ -151,7 +138,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
   } catch (err: any) {
-    console.error('POST /api/entries error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
@@ -170,7 +156,6 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (err: any) {
-    console.error('DELETE /api/entries error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
