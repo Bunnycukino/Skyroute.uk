@@ -109,6 +109,7 @@ export default function DashboardPage() {
               <Link href="/logistic" className="text-xs bg-teal-600 text-white px-3 py-1.5 rounded-lg font-bold hover:opacity-90">+ Logistic</Link>
             </div>
           </div>
+
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead>
@@ -135,35 +136,35 @@ export default function DashboardPage() {
                   recentEntries.map((entry: any) => {
                     const expiry = getExpiryStatus(entry.created_at, entry.type);
                     const date = new Date(entry.created_at);
-                    const monthPrefix = date.toLocaleString(\'en-US\', { month: \'short\' }).toUpperCase() + \'-\' + date.getFullYear().toString().slice(-2);
+                    const monthPrefix = date.toLocaleString('en-US', { month: 'short' }).toUpperCase() + '-' + date.getFullYear().toString().slice(-2);
                     
                     return (
                       <tr key={entry.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                        <td className="px-4 py-3 font-mono font-bold text-primary">{entry.c209_number || \'-\'}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{date.toLocaleDateString(\'pl-PL\')}</td>
+                        <td className="px-4 py-3 font-mono font-bold text-primary">{entry.c209_number || '-'}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{date.toLocaleDateString('pl-PL')}</td>
                         <td className="px-4 py-3 text-[10px] font-bold text-muted-foreground">{monthPrefix}</td>
-                        <td className="px-4 py-3 font-mono">{entry.bar_number || entry.container_code || \'-\'}</td>
-                        <td className="px-4 py-3 font-medium">{entry.pieces ?? \'-\'}</td>
-                        <td className="px-4 py-3 font-bold">{entry.flight_number || \'-\'}</td>
-                        <td className="px-4 py-3 font-mono text-muted-foreground">{entry.c208_number || \'-\'}</td>
+                        <td className="px-4 py-3 font-mono">{entry.bar_number || entry.container_code || '-'}</td>
+                        <td className="px-4 py-3 font-medium">{entry.pieces ?? '-'}</td>
+                        <td className="px-4 py-3 font-bold">{entry.flight_number || '-'}</td>
+                        <td className="px-4 py-3 font-mono text-muted-foreground">{entry.c208_number || '-'}</td>
                         <td className="px-4 py-3">
                           <div className="flex gap-1">
-                            {entry.type === \'ramp_input\' && <span className="bg-gray-500/20 text-gray-400 text-[9px] px-1.5 py-0.5 rounded border border-gray-500/30 font-bold uppercase">RAMP</span>}
-                            {entry.type === \'logistic_input\' && <span className="bg-teal-500/20 text-teal-400 text-[9px] px-1.5 py-0.5 rounded border border-teal-500/30 font-bold uppercase">LOG</span>}
+                            {entry.type === 'ramp_input' && <span className="bg-gray-500/20 text-gray-400 text-[9px] px-1.5 py-0.5 rounded border border-gray-500/30 font-bold uppercase">RAMP</span>}
+                            {entry.type === 'logistic_input' && <span className="bg-teal-500/20 text-teal-400 text-[9px] px-1.5 py-0.5 rounded border border-teal-500/30 font-bold uppercase">LOG</span>}
                             {entry.is_new_build && <span className="bg-blue-500/20 text-blue-300 text-[9px] px-1.5 py-0.5 rounded border border-blue-500/30 font-bold uppercase">NEW</span>}
                             {entry.is_rw_flight && <span className="bg-purple-500/20 text-purple-300 text-[9px] px-1.5 py-0.5 rounded border border-purple-500/30 font-bold uppercase">RW</span>}
                           </div>
                         </td>
-                        <td className="px-4 py-3 font-medium uppercase">{entry.signature || \'-\'}</td>
+                        <td className="px-4 py-3 font-medium uppercase">{entry.signature || '-'}</td>
                         <td className="px-4 py-3">
                           {expiry ? (
                             <span className={`px-2 py-0.5 rounded-[4px] text-[11px] font-bold ${expiry.color}`}>
                               {expiry.label}
                             </span>
-                          ) : \'-\'}
+                          ) : '-'}
                         </td>
                         <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                          {date.toLocaleString(\'pl-PL\', { day: \'2-digit\', month: \'2-digit\', hour: \'2-digit\', minute: \'2-digit\' })}
+                          {date.toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                         </td>
                       </tr>
                     );
