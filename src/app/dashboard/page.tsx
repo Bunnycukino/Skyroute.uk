@@ -69,6 +69,9 @@ export default function DashboardPage() {
           <Link href="/logistic" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm text-muted-foreground hover:text-foreground">
             <span>📦</span> Logistic Input (LOG)
           </Link>
+          <Link href="/entries" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm text-muted-foreground hover:text-foreground">
+            <span>📋</span> All Entries
+          </Link>
         </nav>
         <div className="p-4 border-t border-border">
           <button onClick={handleSignOut} className="w-full text-left px-3 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent">
@@ -76,13 +79,11 @@ export default function DashboardPage() {
           </button>
         </div>
       </aside>
-
       <main className="flex-1 p-8 overflow-auto">
         <div className="mb-8">
           <h2 className="text-2xl font-bold">Dashboard</h2>
           <p className="text-muted-foreground text-sm mt-1">System C209 - Ramp & Logistic</p>
         </div>
-
         <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="bg-card border border-border rounded-xl p-4">
             <p className="text-xs text-muted-foreground">Wszystkie wpisy</p>
@@ -101,7 +102,6 @@ export default function DashboardPage() {
             <p className="text-2xl font-bold mt-1">{loading ? '...' : stats.totalFlights ?? 0}</p>
           </div>
         </div>
-
         <div className="bg-card border border-border rounded-xl">
           <div className="p-4 border-b border-border flex items-center justify-between">
             <h3 className="font-semibold">Ostatnie wpisy</h3>
@@ -138,12 +138,13 @@ export default function DashboardPage() {
                       <td className="p-3 font-mono">{entry.c208_number || '-'}</td>
                       <td className="p-3 font-mono text-xs">{entry.bar_number || entry.container_code || '-'}</td>
                       <td className="p-3">{entry.flight_number || '-'}</td>
-                      <td className="p-3 text-xs">{entry.origin && entry.destination ? `${entry.origin}→${entry.destination}` : '-'}</td>
+                      <td className="p-3 text-xs">{entry.origin && entry.destination ? `${entry.origin}\u2192${entry.destination}` : '-'}</td>
                       <td className="p-3">
                         <div className="flex gap-1">
                           {entry.is_new_build && <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded">NEW</span>}
-                          {entry.is_rw && <span className="text-xs bg-purple-100 text-purple-800 px-1 rounded">RW</span>}
+                          {entry.is_rw_flight && <span className="text-xs bg-purple-100 text-purple-800 px-1 rounded">RW</span>}
                           {entry.type === 'ramp_input' && <span className="text-xs bg-gray-100 text-gray-700 px-1 rounded">RAMP</span>}
+                          {entry.type === 'logistic_input' && !entry.is_new_build && !entry.is_rw_flight && <span className="text-xs bg-teal-100 text-teal-700 px-1 rounded">LOG</span>}
                         </div>
                       </td>
                       <td className="p-3 text-xs">{entry.signature || '-'}</td>
