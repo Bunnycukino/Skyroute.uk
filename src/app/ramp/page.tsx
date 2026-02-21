@@ -27,7 +27,6 @@ export default function RampInputPage() {
     setLoading(true);
     setError('');
     setSuccess(null);
-
     try {
       const res = await fetch('/api/entries', {
         method: 'POST',
@@ -67,12 +66,11 @@ export default function RampInputPage() {
         </div>
         <nav className="flex-1 p-4 space-y-1">
           <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm text-muted-foreground"><span>📊</span> Dashboard</Link>
-          <Link href="/ramp" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium text-sm"><span>✈️</span> Ramp Input</Link>
-          <Link href="/logistic" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm text-muted-foreground"><span>📦</span> Logistic Input</Link>
+          <Link href="/ramp" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium text-sm"><span>✈️</span> C209 Input ( Ramp Input )</Link>
+          <Link href="/logistic" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm text-muted-foreground"><span>📦</span> C208 Input ( Logistic Input )</Link>
           <Link href="/entries" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm text-muted-foreground"><span>📋</span> All Entries</Link>
         </nav>
       </aside>
-
       <main className="flex-1 p-8 overflow-auto">
         <div className="max-w-5xl mx-auto">
           <div className="flex justify-between items-center mb-8">
@@ -82,7 +80,6 @@ export default function RampInputPage() {
               <p className="text-[10px] text-muted-foreground font-bold uppercase">catering</p>
             </div>
           </div>
-
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
@@ -98,31 +95,31 @@ export default function RampInputPage() {
                 <tbody>
                   <tr>
                     <td className={td + " bg-yellow-400/20"}>
-                      <input required className={inp + " uppercase"} placeholder="np. TA1234" 
+                      <input required className={inp + " uppercase"} placeholder="np. TA1234"
                         value={formData.bar_number}
                         onChange={e => setFormData({...formData, bar_number: e.target.value})}
                       />
                     </td>
                     <td className={td + " bg-yellow-400/20 w-24"}>
-                      <input required type="number" className={inp} placeholder="0" 
+                      <input required type="number" className={inp} placeholder="0"
                         value={formData.pieces}
                         onChange={e => setFormData({...formData, pieces: e.target.value})}
                       />
                     </td>
                     <td className={td + " bg-yellow-400/20"}>
-                      <input required className={inp + " uppercase"} placeholder="np. TOM123" 
+                      <input required className={inp + " uppercase"} placeholder="np. TOM123"
                         value={formData.flight_number}
                         onChange={e => setFormData({...formData, flight_number: e.target.value})}
                       />
                     </td>
                     <td className={td + " bg-yellow-400/20"}>
-                      <input required className={inp + " uppercase"} placeholder="Podpis" 
+                      <input required className={inp + " uppercase"} placeholder="Podpis"
                         value={formData.signature}
                         onChange={e => setFormData({...formData, signature: e.target.value})}
                       />
                     </td>
                     <td className={td + " bg-yellow-400/20"}>
-                      <input className={inp} placeholder="..." 
+                      <input className={inp} placeholder="..."
                         value={formData.notes}
                         onChange={e => setFormData({...formData, notes: e.target.value})}
                       />
@@ -131,16 +128,13 @@ export default function RampInputPage() {
                 </tbody>
               </table>
             </div>
-
             <div className="flex justify-end">
               <button disabled={loading} className="bg-primary text-primary-foreground px-12 py-3 rounded-lg font-black uppercase tracking-tighter shadow-lg hover:opacity-90 disabled:opacity-50">
                 {loading ? 'Adding...' : 'AddEntry'}
               </button>
             </div>
-
             {error && <div className="p-4 bg-destructive/10 text-destructive rounded-lg text-sm font-bold border border-destructive/20">{error}</div>}
             {success && <div className="p-4 bg-green-500/10 text-green-500 rounded-lg text-sm font-bold border border-green-500/20">Wpis Ramp dodany! Numer C209: {success.c209}</div>}
-
             <div className="mt-12">
               <h3 className="text-[10px] font-black uppercase text-muted-foreground mb-3 tracking-widest">Prefix Reference</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -163,10 +157,10 @@ export default function RampInputPage() {
                   </tbody>
                 </table>
                 <div className="bg-card border border-border p-6 rounded-2xl flex items-center justify-center">
-                   <div className="text-center">
-                     <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">REWAREHOUSE (RR)</p>
-                     <p className="text-sm font-medium">Use consistent prefixes for automated tracking.</p>
-                   </div>
+                  <div className="text-center">
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">REWAREHOUSE (RR)</p>
+                    <p className="text-sm font-medium">Use consistent prefixes for automated tracking.</p>
+                  </div>
                 </div>
               </div>
             </div>
