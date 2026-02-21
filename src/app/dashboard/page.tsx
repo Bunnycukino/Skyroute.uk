@@ -2,13 +2,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-
 export default function DashboardPage() {
   const router = useRouter();
   const [stats, setStats] = useState({ totalEntries: 0, todayEntries: 0, expiringSoon: 0, totalFlights: 0 });
   const [recentEntries, setRecentEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     async function load() {
       try {
@@ -25,24 +23,20 @@ export default function DashboardPage() {
     }
     load();
   }, [router]);
-
   async function handleSignOut() {
     await fetch('/api/auth', { method: 'DELETE' });
     router.push('/');
   }
-
   function getExpiryStatus(createdAt: string, type: string) {
     if (type === 'ramp_input') return null;
     const created = new Date(createdAt);
     const now = new Date();
     const hoursElapsed = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
     const hoursLeft = 48 - hoursElapsed;
-    
     if (hoursLeft < 0) return { label: 'WYGASL', color: 'bg-red-500/20 text-red-300' };
     if (hoursLeft < 12) return { label: `${Math.floor(hoursLeft)}h`, color: 'bg-orange-500/20 text-orange-300' };
     return { label: `${Math.floor(hoursLeft)}h`, color: 'bg-green-500/20 text-green-300' };
   }
-
   return (
     <div className="min-h-screen bg-background flex">
       <aside className="w-64 bg-card border-r border-border flex flex-col">
@@ -60,10 +54,10 @@ export default function DashboardPage() {
             <span>📊</span> Dashboard
           </Link>
           <Link href="/ramp" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground">
-            <span>✈️</span> Ramp Input (C209)
+            <span>✈️</span> C209 Input ( Ramp Input )
           </Link>
           <Link href="/logistic" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground">
-            <span>📦</span> Logistic Input (LOG)
+            <span>📦</span> C208 Input ( Logistic Input )
           </Link>
           <Link href="/entries" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground">
             <span>📋</span> All Entries
@@ -75,13 +69,11 @@ export default function DashboardPage() {
           </div>
         </nav>
       </aside>
-
       <main className="flex-1 p-8 overflow-y-auto">
         <header className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">System C209 - Ramp & Logistic Operations</p>
         </header>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Wszystkie wpisy', value: stats.totalEntries, icon: '📋' },
@@ -100,7 +92,6 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
-
         <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
           <div className="p-6 border-b border-border flex justify-between items-center bg-muted/30">
             <h3 className="font-bold text-lg">Ostatnie wpisy</h3>
@@ -109,7 +100,6 @@ export default function DashboardPage() {
               <Link href="/logistic" className="text-xs bg-teal-600 text-white px-3 py-1.5 rounded-lg font-bold hover:opacity-90">+ Logistic</Link>
             </div>
           </div>
-
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead>
@@ -137,7 +127,6 @@ export default function DashboardPage() {
                     const expiry = getExpiryStatus(entry.created_at, entry.type);
                     const date = new Date(entry.created_at);
                     const monthPrefix = date.toLocaleString('en-US', { month: 'short' }).toUpperCase() + '-' + date.getFullYear().toString().slice(-2);
-                    
                     return (
                       <tr key={entry.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
                         <td className="px-4 py-3 font-mono font-bold text-primary">{entry.c209_number || '-'}</td>
