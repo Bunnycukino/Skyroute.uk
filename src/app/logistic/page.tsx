@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-
 export default function LogisticInputPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<{c209: string; c208: string} | null>(null);
@@ -15,7 +14,6 @@ export default function LogisticInputPage() {
     notes: '',
     is_new_build: false
   });
-
   const AIRLINES = [
     { name: 'TUI Airways', prefix: 'TA', rw: 'RWTA' },
     { name: 'Ryanair', prefix: 'RYR', rw: 'RWRYR' },
@@ -23,7 +21,6 @@ export default function LogisticInputPage() {
     { name: 'Singapore Airlines', prefix: 'POLY', rw: 'RWPOLY' },
     { name: 'Emirates', prefix: 'EK', rw: 'RWEK' },
   ];
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -54,11 +51,9 @@ export default function LogisticInputPage() {
       setLoading(false);
     }
   }
-
   const th = "px-4 py-2 border border-border bg-muted text-[10px] font-bold uppercase text-left";
   const td = "p-0 border border-border";
   const inp = "w-full px-3 py-2 bg-transparent outline-none text-sm font-bold";
-
   return (
     <div className="min-h-screen bg-background flex">
       <aside className="w-64 bg-card border-r border-border flex flex-col">
@@ -70,8 +65,8 @@ export default function LogisticInputPage() {
         </div>
         <nav className="flex-1 p-4 space-y-1">
           <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm text-muted-foreground"><span>📊</span> Dashboard</Link>
-          <Link href="/ramp" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm text-muted-foreground"><span>✈️</span> Ramp Input</Link>
-          <Link href="/logistic" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium text-sm"><span>📦</span> Logistic Input</Link>
+          <Link href="/ramp" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm text-muted-foreground"><span>✈️</span> C209 Input ( Ramp Input )</Link>
+          <Link href="/logistic" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium text-sm"><span>📦</span> C208 Input ( Logistic Input )</Link>
           <Link href="/entries" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent text-sm text-muted-foreground"><span>📋</span> All Entries</Link>
         </nav>
       </aside>
