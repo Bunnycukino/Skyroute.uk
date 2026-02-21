@@ -54,10 +54,10 @@ export default function EntriesPage() {
             <span>📊</span> Dashboard
           </Link>
           <Link href="/ramp" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground">
-            <span>✈️</span> Ramp Input (C209)
+            <span>✈️</span> C209 Input ( Ramp Input )
           </Link>
           <Link href="/logistic" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground">
-            <span>📦</span> Logistic Input (LOG)
+            <span>📦</span> C208 Input ( Logistic Input )
           </Link>
           <Link href="/entries" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium text-sm">
             <span>📋</span> All Entries
@@ -168,7 +168,7 @@ export default function EntriesPage() {
               <button onClick={() => setSelectedEntry(null)} className="text-sm font-bold border border-black px-4 py-2 hover:bg-gray-100 uppercase">Close</button>
               <button onClick={() => window.print()} className="bg-black text-white px-6 py-2 text-sm font-bold uppercase hover:opacity-90">Print Control Sheet</button>
             </div>
-            
+
             <div className="p-12 control-sheet">
               <div className="flex justify-between items-start mb-8 border-b-4 border-black pb-6">
                 <div>
