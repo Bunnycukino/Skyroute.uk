@@ -61,7 +61,7 @@ export default function RampInputPage() {
         <div className="p-6 border-b border-border">
           <Link href="/dashboard" className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold">SR</div>
-            <span className="font-bold text-sm text-foreground">SkyRoute OK</span>
+            <span className="font-bold text-sm text-foreground">SkyRoute.uk</span>
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">
