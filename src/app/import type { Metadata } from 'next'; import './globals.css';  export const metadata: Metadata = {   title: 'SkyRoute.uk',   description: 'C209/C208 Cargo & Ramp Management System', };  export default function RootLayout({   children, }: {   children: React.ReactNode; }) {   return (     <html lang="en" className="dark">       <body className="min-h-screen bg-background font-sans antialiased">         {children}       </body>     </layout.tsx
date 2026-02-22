@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'SkyRoute OK',
+  title: 'SkyRoute.uk',
   description: 'C209/C208 Cargo & Ramp Management System',
 };
 
