@@ -59,6 +59,9 @@ export default function DashboardPage() {
           <Link href="/logistic" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground">
             <span>📦</span> C208 Input ( Logistic Input )
           </Link>
+          <Link href="/in-bond" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground">
+            <span>📄</span> In Bond Control Sheet
+          </Link>
           <Link href="/entries" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground">
             <span>📋</span> All Entries
           </Link>
@@ -98,6 +101,7 @@ export default function DashboardPage() {
             <div className="flex gap-2">
               <Link href="/ramp" className="text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-lg font-bold hover:opacity-90">+ Ramp</Link>
               <Link href="/logistic" className="text-xs bg-teal-600 text-white px-3 py-1.5 rounded-lg font-bold hover:opacity-90">+ Logistic</Link>
+              <Link href="/in-bond" className="text-xs bg-amber-600 text-white px-3 py-1.5 rounded-lg font-bold hover:opacity-90">In Bond</Link>
             </div>
           </div>
           <div className="overflow-x-auto">
