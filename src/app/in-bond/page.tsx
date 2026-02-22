@@ -1,4 +1,5 @@
 'use client';
+
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -10,11 +11,10 @@ function InBondFormContent() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Form state
   const [formData, setFormData] = useState({
     c209_number: '',
     bar_number: '',
-    time: '',
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     date: new Date().toISOString().split('T')[0],
     flight_number: '',
     seal_numbers: '',
@@ -31,7 +31,6 @@ function InBondFormContent() {
     equipment_serviceable_wheels: 'YES'
   });
 
-  // Auto-fill from URL params
   useEffect(() => {
     const c209 = searchParams.get('c209') || '';
     const bar = searchParams.get('bar') || '';
@@ -48,7 +47,7 @@ function InBondFormContent() {
         flight_number: flight,
         packing_pieces: pieces,
         packing_signature: sig,
-        manager_name: sig // Auto-fill manager name with signature initials if available
+        manager_name: sig
       }));
     }
 
@@ -59,272 +58,180 @@ function InBondFormContent() {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    fetch('/api/entries?limit=1').then(res => {
-      if (res.status === 401) router.push('/');
-    });
-  }, [router]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(false);
+
     try {
-      const res = await fetch('/api/in-bond', {
+      const res = await fetch('/api/entries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          action: 'in_bond_input',
+          ...formData
+        })
       });
-      if (!res.ok) throw new Error('Błąd zapisu');
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to save form');
+      }
+
       setSuccess(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const RadioGroup = ({ label, name }: { label: string, name: keyof typeof formData }) => (
-    <div className=\"flex items-center justify-between py-2 border-b border-gray-100 last:border-0\">
-      <span className=\"text-xs font-bold uppercase text-gray-600\">{label}</span>
-      <div className=\"flex gap-6\">
-        {['YES', 'NO'].map(opt => (
-          <label key={opt} className=\"flex items-center gap-2 cursor-pointer group\">
-            <input
-              type=\"radio\"
-              name={name}
-              checked={formData[name] === opt}
-              onChange={() => setFormData(prev => ({ ...prev, [name]: opt }))}
-              className=\"w-4 h-4 border-2 border-gray-300 text-black focus:ring-0 cursor-pointer\"
-            />
-            <span className=\"text-xs font-black\">{opt}</span>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
+  const sectionHeader = "bg-gray-100 p-2 font-black text-xs border-b-2 border-black uppercase tracking-widest";
+  const cellStyle = "p-4 border-r-2 border-black last:border-r-0";
+  const labelStyle = "text-[9px] font-black uppercase text-gray-500 mb-1 block";
+  const inputStyle = "w-full text-lg font-black uppercase outline-none bg-transparent placeholder:text-gray-300";
 
   return (
-    <div className=\"min-h-screen bg-white print:bg-white\">
-      {/* Sidebar - hidden on print */}
-      <aside className=\"fixed left-0 top-0 h-full w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-50 print:hidden\">
-        <div className=\"p-6 border-b border-slate-800\">
-          <Link href=\"/dashboard\" className=\"flex items-center gap-3\">
-            <div className=\"w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center text-green-500 font-black text-xl\">SR</div>
-            <div>
-              <h1 className=\"font-black text-white text-lg tracking-tighter\">SkyRoute.uk</h1>
-              <p className=\"text-[10px] text-slate-500 uppercase font-bold tracking-widest\">In-Bond Control</p>
+    <div className="min-h-screen bg-gray-50 p-4 md:p-10 print:p-0 print:bg-white">
+      <div className="max-w-[1000px] mx-auto mb-6 flex justify-between items-center print:hidden">
+        <Link href="/ramp" className="text-sm font-bold flex items-center gap-2 hover:underline">
+          ← Back to Ramp Input
+        </Link>
+        <button onClick={() => window.print()} className="bg-black text-white px-6 py-2 rounded-xl font-bold text-sm">
+          Print Form
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="max-w-[1000px] mx-auto bg-white border-[3px] border-black shadow-2xl print:shadow-none print:border-2">
+        <div className="p-8 border-b-4 border-black flex justify-between items-start">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-black text-white flex items-center justify-center font-black text-xl rounded">SR</div>
+              <h1 className="text-4xl font-black uppercase tracking-tighter leading-none">In Bond Control Sheet</h1>
             </div>
-          </Link>
+            <p className="text-[10px] font-bold text-gray-400 italic uppercase tracking-widest">Security Restricted Document - Emirates Group Logistics</p>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-black">SR-{formData.c209_number || '---'}</div>
+            <div className="text-[9px] font-bold uppercase text-gray-400 tracking-widest">Official Ref No.</div>
+          </div>
         </div>
-        <nav className=\"flex-1 p-4 space-y-2\">
-          <Link href=\"/ramp\" className=\"flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-sm font-bold text-slate-400 hover:text-white group\">
-            <span className=\"text-lg group-hover:scale-110 transition-transform\">✈️</span> Ramp Input
-          </Link>
-          <Link href=\"/in-bond\" className=\"flex items-center gap-3 px-4 py-3 rounded-xl bg-green-500 text-white text-sm font-black shadow-lg shadow-green-500/20\">
-            <span className=\"text-lg\">📄</span> In Bond Sheet
-          </Link>
-          <Link href=\"/entries\" className=\"flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-sm font-bold text-slate-400 hover:text-white group\">
-            <span className=\"text-lg group-hover:scale-110 transition-transform\">📋</span> View All
-          </Link>
-        </nav>
-        <div className=\"p-6 border-t border-slate-800\">
-          <button 
-            onClick={() => window.print()}
-            className=\"w-full bg-slate-800 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-700 transition-all\"
-          >
-            🖨️ Print Sheet
-          </button>
+
+        {success && <div className="bg-green-100 border-b-2 border-green-500 text-green-700 p-4 font-black text-center print:hidden">FORM SAVED SUCCESSFULLY</div>}
+        {error && <div className="bg-red-100 border-b-2 border-red-500 text-red-700 p-4 font-black text-center print:hidden">{error}</div>}
+
+        <div className="grid grid-cols-3 border-b-2 border-black divide-x-2 divide-black">
+          <div className={cellStyle}>
+            <label className={labelStyle}>C209 Number</label>
+            <input required className={inputStyle} value={formData.c209_number} onChange={e => setFormData({...formData, c209_number: e.target.value})} />
+          </div>
+          <div className={cellStyle}>
+            <label className={labelStyle}>Bar Number / Code</label>
+            <input required className={inputStyle} value={formData.bar_number} onChange={e => setFormData({...formData, bar_number: e.target.value})} />
+          </div>
+          <div className={cellStyle}>
+            <label className={labelStyle}>Flight No.</label>
+            <input required className={inputStyle} value={formData.flight_number} onChange={e => setFormData({...formData, flight_number: e.target.value})} />
+          </div>
         </div>
-      </aside>
 
-      {/* Main Content */}
-      <main className=\"pl-64 print:pl-0 min-h-screen flex flex-col items-center py-12 px-4 print:py-0 print:px-0\">
-        <form onSubmit={handleSubmit} className=\"w-full max-w-[210mm] bg-white print:shadow-none p-8 md:p-12 space-y-8\">
-          
-          {/* Official Header */}
-          <div className=\"flex justify-between items-start border-b-4 border-black pb-6 mb-8\">
-            <div className=\"space-y-1\">
-              <h1 className=\"text-4xl font-black uppercase tracking-tighter leading-none\">In Bond Control Sheet</h1>
-              <p className=\"text-xs font-bold text-gray-500 italic uppercase tracking-widest\">Security Restricted Document - Emirates Group Logistics</p>
-            </div>
-            <div className=\"text-right\">
-              <div className=\"text-2xl font-black\">SR-{formData.c209_number || '---'}</div>
-              <div className=\"text-[10px] font-bold uppercase text-gray-400 tracking-widest\">Official Ref No.</div>
+        <div className="grid grid-cols-4 border-b-2 border-black divide-x-2 divide-black">
+          <div className={cellStyle}>
+            <label className={labelStyle}>Date</label>
+            <input type="date" className={inputStyle} value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
+          </div>
+          <div className={cellStyle}>
+            <label className={labelStyle}>Time</label>
+            <input className={inputStyle} value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} />
+          </div>
+          <div className="col-span-2 p-4">
+            <label className={labelStyle}>Seal Numbers</label>
+            <input placeholder="E.G. 123456, 123457" className={inputStyle} value={formData.seal_numbers} onChange={e => setFormData({...formData, seal_numbers: e.target.value})} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 border-b-2 border-black divide-x-2 divide-black bg-gray-50/50">
+          <div className="p-4 flex items-center justify-between">
+            <span className="text-xs font-black uppercase tracking-tight">Lock & Seal Present and Intact?</span>
+            <select className="bg-black text-white text-xs font-black p-2 rounded" value={formData.lock_seal_check} onChange={e => setFormData({...formData, lock_seal_check: e.target.value})}>
+              <option value="YES">YES</option>
+              <option value="NO">NO</option>
+            </select>
+          </div>
+          <div className="p-4 flex items-center justify-between">
+            <span className="text-xs font-black uppercase tracking-tight">Manager Informed?</span>
+            <select className="bg-black text-white text-xs font-black p-2 rounded" value={formData.manager_informed} onChange={e => setFormData({...formData, manager_informed: e.target.value})}>
+              <option value="YES">YES</option>
+              <option value="NO">NO</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="p-4 border-b-2 border-black">
+          <label className={labelStyle}>Inbound Bars Comments</label>
+          <textarea rows={2} className="w-full text-sm font-bold uppercase outline-none bg-transparent resize-none" placeholder="No discrepancies noted..." value={formData.inbound_bars_comments} onChange={e => setFormData({...formData, inbound_bars_comments: e.target.value})} />
+        </div>
+
+        <div className={sectionHeader}>Packing Details / Szczegóły Pakowania</div>
+        
+        <div className="grid grid-cols-3 border-b-2 border-black divide-x-2 divide-black">
+          <div className={cellStyle}>
+            <label className={labelStyle}>Total Pieces</label>
+            <input className={inputStyle} value={formData.packing_pieces} onChange={e => setFormData({...formData, packing_pieces: e.target.value})} />
+          </div>
+          <div className={cellStyle}>
+            <label className={labelStyle}>Packing Date</label>
+            <input type="date" className={inputStyle} value={formData.packing_date} onChange={e => setFormData({...formData, packing_date: e.target.value})} />
+          </div>
+          <div className={cellStyle}>
+            <label className={labelStyle}>Signature / Initials</label>
+            <input className={inputStyle} value={formData.packing_signature} onChange={e => setFormData({...formData, packing_signature: e.target.value})} />
+          </div>
+        </div>
+
+        <div className={sectionHeader}>Equipment Serviceability Check</div>
+
+        <div className="grid grid-cols-2 divide-x-2 divide-black border-b-2 border-black">
+          <div className="p-4 flex items-center justify-between">
+            <span className="text-xs font-black uppercase tracking-tight">Doors Serviceable?</span>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2"><input type="radio" checked={formData.equipment_serviceable_doors === 'YES'} onChange={() => setFormData({...formData, equipment_serviceable_doors: 'YES'})} /><span className="text-[10px] font-black">YES</span></label>
+              <label className="flex items-center gap-2"><input type="radio" checked={formData.equipment_serviceable_doors === 'NO'} onChange={() => setFormData({...formData, equipment_serviceable_doors: 'NO'})} /><span className="text-[10px] font-black">NO</span></label>
             </div>
           </div>
-
-          {success && <div className=\"bg-green-100 border-2 border-green-500 text-green-700 p-4 rounded-xl font-black text-center print:hidden\">FORM SAVED SUCCESSFULLY / FORMULARZ ZAPISANY</div>}
-          {error && <div className=\"bg-red-100 border-2 border-red-500 text-red-700 p-4 rounded-xl font-black text-center print:hidden\">{error}</div>}
-
-          {/* Core Info Table */}
-          <div className=\"grid grid-cols-3 border-2 border-black divide-x-2 divide-black\">
-            <div className=\"p-4 space-y-1\">
-              <label className=\"text-[9px] font-black uppercase text-gray-500\">C209 Number</label>
-              <input 
-                className=\"w-full text-xl font-black uppercase outline-none\"
-                value={formData.c209_number}
-                onChange={e => setFormData(p => ({...p, c209_number: e.target.value}))}
-              />
-            </div>
-            <div className=\"p-4 space-y-1\">
-              <label className=\"text-[9px] font-black uppercase text-gray-500\">Bar Number</label>
-              <input 
-                className=\"w-full text-xl font-black uppercase outline-none\"
-                value={formData.bar_number}
-                onChange={e => setFormData(p => ({...p, bar_number: e.target.value}))}
-              />
-            </div>
-            <div className=\"p-4 space-y-1\">
-              <label className=\"text-[9px] font-black uppercase text-gray-500\">Flight No.</label>
-              <input 
-                className=\"w-full text-xl font-black uppercase outline-none\"
-                value={formData.flight_number}
-                onChange={e => setFormData(p => ({...p, flight_number: e.target.value}))}
-              />
+          <div className="p-4 flex items-center justify-between">
+            <span className="text-xs font-black uppercase tracking-tight">Wheels / Base Serviceable?</span>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2"><input type="radio" checked={formData.equipment_serviceable_wheels === 'YES'} onChange={() => setFormData({...formData, equipment_serviceable_wheels: 'YES'})} /><span className="text-[10px] font-black">YES</span></label>
+              <label className="flex items-center gap-2"><input type="radio" checked={formData.equipment_serviceable_wheels === 'NO'} onChange={() => setFormData({...formData, equipment_serviceable_wheels: 'NO'})} /><span className="text-[10px] font-black">NO</span></label>
             </div>
           </div>
+        </div>
 
-          <div className=\"grid grid-cols-2 border-x-2 border-b-2 border-black divide-x-2 divide-black\">
-            <div className=\"p-4 space-y-1\">
-              <label className=\"text-[9px] font-black uppercase text-gray-500\">Date</label>
-              <input 
-                type=\"date\"
-                className=\"w-full text-lg font-bold outline-none\"
-                value={formData.date}
-                onChange={e => setFormData(p => ({...p, date: e.target.value, packing_date: e.target.value}))}
-              />
+        <div className="p-8 grid grid-cols-2 gap-12 bg-gray-50/30">
+          <div className="space-y-4">
+            <label className={labelStyle}>Manager Name / Signature</label>
+            <div className="border-b-2 border-black pb-2">
+              <input className="w-full font-black text-xl uppercase outline-none bg-transparent" value={formData.manager_name} onChange={e => setFormData({...formData, manager_name: e.target.value})} />
             </div>
-            <div className=\"p-4 space-y-1\">
-              <label className=\"text-[9px] font-black uppercase text-gray-500\">Time</label>
-              <input 
-                type=\"time\"
-                className=\"w-full text-lg font-bold outline-none\"
-                value={formData.time}
-                onChange={e => setFormData(p => ({...p, time: e.target.value}))}
-              />
-            </div>
+            <p className="text-[8px] font-bold text-gray-400 uppercase">I confirm that all details are accurate and equipment has been checked.</p>
           </div>
-
-          {/* Section 1: Inbound */}
-          <section className=\"space-y-4\">
-            <div className=\"bg-black text-white px-4 py-1 flex justify-between items-center\">
-              <h2 className=\"text-sm font-black uppercase tracking-widest\">Section 1: Inbound Bars Verification</h2>
-              <span className=\"text-[10px] font-bold\">C209-CHECK-A</span>
-            </div>
-            <div className=\"border-2 border-black p-6 space-y-4\">
-              <RadioGroup label=\"Lock & Seal Integrity Check\" name=\"lock_seal_check\" />
-              <div className=\"space-y-2\">
-                <label className=\"text-[10px] font-black uppercase text-gray-500\">Seal Numbers (Range: From - To)</label>
-                <input 
-                  placeholder=\"e.g. 098123 - 098130\"
-                  className=\"w-full border-b-2 border-gray-200 py-2 text-sm font-bold outline-none focus:border-black transition-colors\"
-                  value={formData.seal_numbers}
-                  onChange={e => setFormData(p => ({...p, seal_numbers: e.target.value}))}
-                />
-              </div>
-              <div className=\"space-y-2\">
-                <label className=\"text-[10px] font-black uppercase text-gray-500\">Observations / Comments</label>
-                <textarea 
-                  className=\"w-full h-24 border-2 border-gray-100 p-4 text-sm font-medium outline-none focus:border-black resize-none\"
-                  value={formData.inbound_bars_comments}
-                  onChange={e => setFormData(p => ({...p, inbound_bars_comments: e.target.value}))}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Section 2: Packing & Management */}
-          <div className=\"grid grid-cols-2 gap-8\">
-            <section className=\"space-y-4\">
-              <div className=\"bg-gray-200 px-4 py-1 border-l-4 border-black\">
-                <h2 className=\"text-[11px] font-black uppercase tracking-widest\">Section 3: Bar Packing</h2>
-              </div>
-              <div className=\"border-2 border-black p-6 space-y-6\">
-                <div className=\"space-y-2\">
-                  <label className=\"text-[10px] font-black uppercase text-gray-500\">Pieces Count</label>
-                  <input 
-                    type=\"number\"
-                    className=\"w-full text-3xl font-black outline-none\"
-                    value={formData.packing_pieces}
-                    onChange={e => setFormData(p => ({...p, packing_pieces: e.target.value}))}
-                  />
-                </div>
-                <RadioGroup label=\"Manager Notified\" name=\"packing_manager_informed\" />
-                <div className=\"pt-4 border-t border-gray-200\">
-                  <label className=\"text-[10px] font-black uppercase text-gray-500 mb-2 block\">Signature (Initials)</label>
-                  <div className=\"text-2xl font-serif italic border-b-2 border-black h-12 flex items-end pb-1\">
-                    {formData.packing_signature}
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section className=\"space-y-4\">
-              <div className=\"bg-gray-200 px-4 py-1 border-l-4 border-black\">
-                <h2 className=\"text-[11px] font-black uppercase tracking-widest\">Section 5: Final Completion</h2>
-              </div>
-              <div className=\"border-2 border-black p-6 space-y-4\">
-                <RadioGroup label=\"Doors Serviceable\" name=\"equipment_serviceable_doors\" />
-                <RadioGroup label=\"Wheels & Brakes OK\" name=\"equipment_serviceable_wheels\" />
-                <div className=\"pt-6 space-y-2\">
-                  <label className=\"text-[10px] font-black uppercase text-gray-500\">Lead / Supervisor Name</label>
-                  <input 
-                    className=\"w-full border-b-2 border-black py-2 text-sm font-bold uppercase outline-none\"
-                    value={formData.manager_name}
-                    onChange={e => setFormData(p => ({...p, manager_name: e.target.value}))}
-                  />
-                </div>
-              </div>
-            </section>
-          </div>
-
-          {/* Form Actions - Hidden on print */}
-          <div className=\"flex justify-center pt-12 print:hidden\">
-            <button
-              type=\"submit\"
-              disabled={loading}
-              className=\"bg-black text-white px-16 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all shadow-2xl disabled:opacity-50\"
-            >
-              {loading ? 'Processing...' : 'Save & Finalize Form'}
+          <div className="flex flex-col justify-end items-end print:hidden">
+            <button type="submit" disabled={loading} className="bg-black text-white px-12 py-4 rounded-2xl font-black uppercase tracking-widest text-sm disabled:opacity-50">
+              {loading ? 'Saving...' : 'Save & Close Form'}
             </button>
           </div>
-
-          {/* Footer Info */}
-          <div className=\"text-center pt-20 border-t border-gray-100 opacity-30\">
-            <p className=\"text-[8px] font-bold uppercase tracking-widest\">System generated via SkyRoute.uk | Emirates Group Logistics v1.2</p>
-          </div>
-        </form>
-      </main>
-
-      <style jsx global>{`
-        @media print {
-          @page {
-            size: A4;
-            margin: 0;
-          }
-          body {
-            background: white;
-          }
-          aside {
-            display: none !important;
-          }
-          main {
-            padding: 0 !important;
-            margin: 0 !important;
-          }
-          button {
-            display: none !important;
-          }
-        }
-      `}</style>
+        </div>
+      </form>
     </div>
   );
 }
 
-export default function InBondControlSheetPage() {
+export default function InBondPage() {
   return (
-    <Suspense fallback={<div className=\"flex items-center justify-center min-h-screen font-black uppercase\">Loading Sheet...</div>}>
+    <Suspense fallback={<div className="p-20 text-center font-black">Loading Control Sheet...</div>}>
       <InBondFormContent />
     </Suspense>
   );
