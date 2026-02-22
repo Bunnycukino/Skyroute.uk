@@ -1,5 +1,6 @@
 # SkyRoute.uk
-Modern, clean rebuild of the SkyRoute C209/C208 management system with a production-ready full-stack architecture.
+
+Modern, clean rebuild of the SkyRoute.uk C209/C208 management system with a production-ready full-stack architecture.
 
 ## Features
 
@@ -30,16 +31,8 @@ skyroute.uk/
 │   ├── app/            # Next.js App Router pages
 │   │   ├── layout.tsx  # Root layout
 │   │   ├── page.tsx    # Dashboard/Home
-│   │   ├── api/        # API routes
-│   │   │   ├── entries/ # CRUD for entries
-│   │   │   └── debug/   # Debug endpoints
-│   │   └── (routes)/   # Feature pages
-│   │       ├── ramp/    # Ramp Input
-│   │       ├── logistic/ # Logistic Input
-│   │       └── log/      # View logs
+│   │   └── api/        # API routes
 │   ├── components/     # React components
-│   │   ├── ui/         # Radix UI components
-│   │   └── forms/      # Form components
-│   ├── lib/            # Business logic
-│   │   ├── db.ts       # Database connection
+│   ├── lib/            # Utilities and shared logic
+│   └── types/          # TypeScript definitions
 ```
