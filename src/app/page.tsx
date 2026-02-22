@@ -14,13 +14,21 @@ export default function SignInPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
+
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username,
+          password
+        }),
       });
+
       const data = await res.json();
+
       if (!res.ok) {
         setError(data.error || 'Invalid credentials');
       } else {
@@ -38,19 +46,32 @@ export default function SignInPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 mb-4">
-            <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            <svg
+              className="w-8 h-8 text-primary"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+              />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-foreground">SkyRoute OK</h1>
+          <h1 className="text-3xl font-bold text-foreground">SkyRoute.uk</h1>
           <p className="text-muted-foreground mt-1 text-sm">C209 / C208 Ramp Management System</p>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-8 shadow-xl">
           <h2 className="text-xl font-semibold text-foreground mb-6">Sign in to continue</h2>
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1.5">Username</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1.5">
+                Username
+              </label>
               <input
                 type="text"
                 value={username}
@@ -61,8 +82,11 @@ export default function SignInPage() {
                 placeholder="Enter your username"
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1.5">Password</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1.5">
+                Password
+              </label>
               <input
                 type="password"
                 value={password}
@@ -73,6 +97,7 @@ export default function SignInPage() {
                 placeholder="Enter your password"
               />
             </div>
+
             {error && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm">
                 <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -81,18 +106,19 @@ export default function SignInPage() {
                 {error}
               </div>
             )}
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 px-4 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="w-full py-3 px-4 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/20"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          Emirates Group Ramp Operations &mdash; Authorised users only
+        <p className="text-center text-muted-foreground mt-8 text-xs">
+          Emirates Group Ramp Operations — Authorised users only
         </p>
       </div>
     </div>
