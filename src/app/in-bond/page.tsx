@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -38,7 +37,6 @@ function InBondFormContent() {
     const pieces = searchParams.get('pieces') || '';
     const sig = searchParams.get('sig') || '';
     const autoPrint = searchParams.get('autoPrint') === 'true';
-
     if (c209 || bar || flight || pieces || sig) {
       setFormData(prev => ({
         ...prev,
@@ -50,11 +48,8 @@ function InBondFormContent() {
         manager_name: sig
       }));
     }
-
     if (autoPrint) {
-      setTimeout(() => {
-        window.print();
-      }, 1000);
+      setTimeout(() => { window.print(); }, 1000);
     }
   }, [searchParams]);
 
@@ -63,22 +58,16 @@ function InBondFormContent() {
     setLoading(true);
     setError(null);
     setSuccess(false);
-
     try {
       const res = await fetch('/api/entries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'in_bond_input',
-          ...formData
-        })
+        body: JSON.stringify({ action: 'in_bond_input', ...formData })
       });
-
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || 'Failed to save form');
       }
-
       setSuccess(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
@@ -88,23 +77,24 @@ function InBondFormContent() {
     }
   }
 
-  const sectionHeader = "bg-gray-100 p-2 font-black text-xs border-b-2 border-black uppercase tracking-widest";
-  const cellStyle = "p-4 border-r-2 border-black last:border-r-0";
-  const labelStyle = "text-[9px] font-black uppercase text-gray-500 mb-1 block";
-  const inputStyle = "w-full text-lg font-black uppercase outline-none bg-transparent placeholder:text-gray-300";
+  const sectionHeader = 'bg-gray-100 p-2 font-black text-xs border-b-2 border-black uppercase tracking-widest';
+  const cellStyle = 'p-4 border-r-2 border-black last:border-r-0';
+  const labelStyle = 'text-[9px] font-black uppercase text-gray-500 mb-1 block';
+  const inputStyle = 'w-full text-lg font-black uppercase outline-none bg-transparent placeholder:text-gray-300';
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-10 print:p-0 print:bg-white">
-      <div className="max-w-[1000px] mx-auto mb-6 flex justify-between items-center print:hidden">
-        <Link href="/ramp" className="text-sm font-bold flex items-center gap-2 hover:underline">
-          ← Back to Ramp Input
+    <div className="min-h-screen bg-gray-100 p-4">
+      <div className="print:hidden flex justify-between items-center mb-4 max-w-[1000px] mx-auto">
+        <Link href="/ramp" className="text-sm font-bold text-gray-600 hover:text-black">
+          &larr; Back to Ramp Input
         </Link>
         <button onClick={() => window.print()} className="bg-black text-white px-6 py-2 rounded-xl font-bold text-sm">
           Print Form
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="max-w-[1000px] mx-auto bg-white border-[3px] border-black shadow-2xl print:shadow-none print:border-2">
+      <form onSubmit={handleSubmit} className="max-w-[1000px] mx-auto bg-white border-[3px] border-black shadow-2xl print:shadow-none print:border-[2px]">
+
         <div className="p-8 border-b-4 border-black flex justify-between items-start">
           <div>
             <div className="flex items-center gap-3 mb-2">
@@ -146,22 +136,22 @@ function InBondFormContent() {
             <label className={labelStyle}>Time</label>
             <input className={inputStyle} value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} />
           </div>
-          <div className="col-span-2 p-4">
+          <div className={`${cellStyle} col-span-2`}>
             <label className={labelStyle}>Seal Numbers</label>
             <input placeholder="E.G. 123456, 123457" className={inputStyle} value={formData.seal_numbers} onChange={e => setFormData({...formData, seal_numbers: e.target.value})} />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 border-b-2 border-black divide-x-2 divide-black bg-gray-50/50">
+        <div className="grid grid-cols-2 border-b-2 border-black divide-x-2 divide-black">
           <div className="p-4 flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-tight">Lock & Seal Present and Intact?</span>
+            <label className="text-xs font-black uppercase tracking-tight">Lock &amp; Seal Present and Intact?</label>
             <select className="bg-black text-white text-xs font-black p-2 rounded" value={formData.lock_seal_check} onChange={e => setFormData({...formData, lock_seal_check: e.target.value})}>
               <option value="YES">YES</option>
               <option value="NO">NO</option>
             </select>
           </div>
           <div className="p-4 flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-tight">Manager Informed?</span>
+            <label className="text-xs font-black uppercase tracking-tight">Manager Informed?</label>
             <select className="bg-black text-white text-xs font-black p-2 rounded" value={formData.manager_informed} onChange={e => setFormData({...formData, manager_informed: e.target.value})}>
               <option value="YES">YES</option>
               <option value="NO">NO</option>
@@ -169,13 +159,20 @@ function InBondFormContent() {
           </div>
         </div>
 
-        <div className="p-4 border-b-2 border-black">
-          <label className={labelStyle}>Inbound Bars Comments</label>
-          <textarea rows={2} className="w-full text-sm font-bold uppercase outline-none bg-transparent resize-none" placeholder="No discrepancies noted..." value={formData.inbound_bars_comments} onChange={e => setFormData({...formData, inbound_bars_comments: e.target.value})} />
+        <div className="border-b-2 border-black">
+          <div className={sectionHeader}>Inbound Bars Comments</div>
+          <div className="p-4">
+            <textarea
+              rows={3}
+              className="w-full text-sm font-bold uppercase outline-none bg-transparent resize-none"
+              placeholder="No discrepancies noted..."
+              value={formData.inbound_bars_comments}
+              onChange={e => setFormData({...formData, inbound_bars_comments: e.target.value})}
+            />
+          </div>
         </div>
 
-        <div className={sectionHeader}>Packing Details / Szczegóły Pakowania</div>
-        
+        <div className={sectionHeader}>Packing Details / Szczeg&oacute;&#322;y Pakowania</div>
         <div className="grid grid-cols-3 border-b-2 border-black divide-x-2 divide-black">
           <div className={cellStyle}>
             <label className={labelStyle}>Total Pieces</label>
@@ -192,25 +189,36 @@ function InBondFormContent() {
         </div>
 
         <div className={sectionHeader}>Equipment Serviceability Check</div>
-
         <div className="grid grid-cols-2 divide-x-2 divide-black border-b-2 border-black">
           <div className="p-4 flex items-center justify-between">
             <span className="text-xs font-black uppercase tracking-tight">Doors Serviceable?</span>
             <div className="flex gap-4">
-              <label className="flex items-center gap-2"><input type="radio" checked={formData.equipment_serviceable_doors === 'YES'} onChange={() => setFormData({...formData, equipment_serviceable_doors: 'YES'})} /><span className="text-[10px] font-black">YES</span></label>
-              <label className="flex items-center gap-2"><input type="radio" checked={formData.equipment_serviceable_doors === 'NO'} onChange={() => setFormData({...formData, equipment_serviceable_doors: 'NO'})} /><span className="text-[10px] font-black">NO</span></label>
+              <label className="flex items-center gap-2">
+                <input type="radio" checked={formData.equipment_serviceable_doors === 'YES'} onChange={() => setFormData({...formData, equipment_serviceable_doors: 'YES'})} />
+                <span className="text-[10px] font-black">YES</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input type="radio" checked={formData.equipment_serviceable_doors === 'NO'} onChange={() => setFormData({...formData, equipment_serviceable_doors: 'NO'})} />
+                <span className="text-[10px] font-black">NO</span>
+              </label>
             </div>
           </div>
           <div className="p-4 flex items-center justify-between">
             <span className="text-xs font-black uppercase tracking-tight">Wheels / Base Serviceable?</span>
             <div className="flex gap-4">
-              <label className="flex items-center gap-2"><input type="radio" checked={formData.equipment_serviceable_wheels === 'YES'} onChange={() => setFormData({...formData, equipment_serviceable_wheels: 'YES'})} /><span className="text-[10px] font-black">YES</span></label>
-              <label className="flex items-center gap-2"><input type="radio" checked={formData.equipment_serviceable_wheels === 'NO'} onChange={() => setFormData({...formData, equipment_serviceable_wheels: 'NO'})} /><span className="text-[10px] font-black">NO</span></label>
+              <label className="flex items-center gap-2">
+                <input type="radio" checked={formData.equipment_serviceable_wheels === 'YES'} onChange={() => setFormData({...formData, equipment_serviceable_wheels: 'YES'})} />
+                <span className="text-[10px] font-black">YES</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input type="radio" checked={formData.equipment_serviceable_wheels === 'NO'} onChange={() => setFormData({...formData, equipment_serviceable_wheels: 'NO'})} />
+                <span className="text-[10px] font-black">NO</span>
+              </label>
             </div>
           </div>
         </div>
 
-        <div className="p-8 grid grid-cols-2 gap-12 bg-gray-50/30">
+        <div className="p-8 grid grid-cols-2 gap-12 bg-gray-50">
           <div className="space-y-4">
             <label className={labelStyle}>Manager Name / Signature</label>
             <div className="border-b-2 border-black pb-2">
@@ -224,6 +232,7 @@ function InBondFormContent() {
             </button>
           </div>
         </div>
+
       </form>
     </div>
   );
