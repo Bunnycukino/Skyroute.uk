@@ -44,7 +44,7 @@ export default function DashboardPage() {
           <Link href="/dashboard" className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold">SR</div>
             <div>
-              <h1 className="font-bold text-foreground text-sm">SkyRoute OK</h1>
+              <h1 className="font-bold text-foreground text-sm">SkyRoute.uk</h1>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">C209 System</p>
             </div>
           </Link>
